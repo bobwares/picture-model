@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-request-search-query.json",
+  "title": "SearchQuery",
+  "description": "Search query parameters for finding images",
+  "type": "object",
+  "properties": {
+    "text": {
+      "type": "string",
+      "description": "Text to search in filename and metadata",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "driveId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Filter by specific drive (optional)"
+    },
+    "tagIds": {
+      "type": "array",
+      "description": "Filter by tags (images must have at least one of these tags)",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "uniqueItems": true
+    },
+    "mimeType": {
+      "type": "string",
+      "description": "Filter by MIME type",
+      "examples": ["image/jpeg", "image/png"]
+    },
+    "fromDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Filter images indexed on or after this date"
+    },
+    "toDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Filter images indexed on or before this date"
+    },
+    "minSize": {
+      "type": "integer",
+      "description": "Minimum file size in bytes",
+      "minimum": 0
+    },
+    "maxSize": {
+      "type": "integer",
+      "description": "Maximum file size in bytes",
+      "minimum": 0
+    },
+    "minWidth": {
+      "type": "integer",
+      "description": "Minimum image width in pixels",
+      "minimum": 1
+    },
+    "minHeight": {
+      "type": "integer",
+      "description": "Minimum image height in pixels",
+      "minimum": 1
+    },
+    "page": {
+      "type": "integer",
+      "description": "Page number for pagination (0-indexed)",
+      "minimum": 0,
+      "default": 0
+    },
+    "size": {
+      "type": "integer",
+      "description": "Number of results per page",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 24
+    },
+    "sort": {
+      "type": "string",
+      "description": "Sort field and direction",
+      "enum": [
+        "indexedDate,desc",
+        "indexedDate,asc",
+        "fileName,asc",
+        "fileName,desc",
+        "fileSize,asc",
+        "fileSize,desc",
+        "capturedAt,desc",
+        "capturedAt,asc"
+      ],
+      "default": "indexedDate,desc"
+    }
+  },
+  "additionalProperties": false
+}

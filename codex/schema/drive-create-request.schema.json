@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:picture-model:schema:drive-create-request:v1",
+  "title": "DriveCreateRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "type", "connection_url", "root_path"],
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "type": { "type": "string", "enum": ["LOCAL", "SMB", "SFTP", "FTP"] },
+    "connection_url": { "type": "string", "minLength": 1 },
+    "credentials": { "type": "string" },
+    "root_path": { "type": "string", "minLength": 1 },
+    "auto_connect": { "type": "boolean" },
+    "auto_crawl": { "type": "boolean" }
+  }
+}

@@ -9,14 +9,20 @@
  * Exports: StatsCard
  * Description: Highlight card for dashboard statistics.
  */
+
+'use client';
+
+import type { ReactNode } from 'react';
+
 interface StatsCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
+    title: string;
+    value: string | number;
+    icon: ReactNode;
 }
 
 export function StatsCard({ title, value, icon }: StatsCardProps) {
   return (
+
     <div className="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-white/75 p-6 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="absolute inset-0 opacity-0 transition group-hover:opacity-100">
         <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-[var(--accent-soft)] opacity-60" />

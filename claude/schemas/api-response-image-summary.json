@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-response-image-summary.json",
+  "title": "ImageSummaryDto",
+  "description": "Summary DTO for image list/grid views",
+  "type": "object",
+  "required": ["id", "driveId", "fileName", "filePath", "fileSize", "mimeType", "thumbnailUrl", "indexedDate"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the image"
+    },
+    "driveId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the drive this image is stored on"
+    },
+    "fileName": {
+      "type": "string",
+      "description": "Original file name",
+      "maxLength": 500
+    },
+    "filePath": {
+      "type": "string",
+      "description": "Relative path on the drive",
+      "maxLength": 2000
+    },
+    "fileSize": {
+      "type": "integer",
+      "description": "File size in bytes",
+      "minimum": 0
+    },
+    "mimeType": {
+      "type": "string",
+      "description": "MIME type of the image",
+      "examples": ["image/jpeg", "image/png", "image/gif"]
+    },
+    "width": {
+      "type": "integer",
+      "description": "Image width in pixels",
+      "minimum": 1
+    },
+    "height": {
+      "type": "integer",
+      "description": "Image height in pixels",
+      "minimum": 1
+    },
+    "thumbnailUrl": {
+      "type": "string",
+      "description": "URL to thumbnail image",
+      "examples": ["/api/files/{driveId}/{imageId}/thumbnail"]
+    },
+    "capturedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the image was captured (from EXIF if available)"
+    },
+    "indexedDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the image was indexed by the system"
+    },
+    "tags": {
+      "type": "array",
+      "description": "Tags associated with this image",
+      "items": {
+        "type": "string",
+        "description": "Tag name"
+      }
+    }
+  },
+  "additionalProperties": false
+}

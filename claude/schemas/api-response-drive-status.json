@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-response-drive-status.json",
+  "title": "DriveStatusDto",
+  "description": "Current status of a drive connection",
+  "type": "object",
+  "required": ["driveId", "status"],
+  "properties": {
+    "driveId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the drive"
+    },
+    "status": {
+      "$ref": "common-enum-connection-status.json",
+      "description": "Current connection status"
+    },
+    "lastConnected": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the drive was last successfully connected"
+    },
+    "lastError": {
+      "type": "string",
+      "description": "Last error message (if status is ERROR)"
+    },
+    "isHealthy": {
+      "type": "boolean",
+      "description": "Whether the drive connection is healthy"
+    },
+    "latencyMs": {
+      "type": "integer",
+      "description": "Current connection latency in milliseconds",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": false
+}

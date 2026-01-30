@@ -1,0 +1,16 @@
+# /**
+#  * App: Picture Model
+#  * Package: e2e
+#  * File: crawler-job-cancel.http
+#  * Version: 0.1.0
+#  * Turns: 1
+#  * Author: codex
+#  * Date: 2026-01-29T22:54:22Z
+#  * Exports: N/A
+#  * Description: Cancel a crawl job.
+#  */
+@baseUrl = http://localhost:8080
+@jobId = 00000000-0000-0000-0000-000000000000
+
+POST {{baseUrl}}/api/crawler/jobs/{{jobId}}/cancel
+Accept: application/json

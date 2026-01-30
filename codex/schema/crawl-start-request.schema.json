@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:picture-model:schema:crawl-start-request:v1",
+  "title": "CrawlStartRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["drive_id", "root_path"],
+  "properties": {
+    "drive_id": { "type": "string" },
+    "root_path": { "type": "string", "minLength": 1 },
+    "is_incremental": { "type": "boolean" }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:picture-model:schema:metadata-update-request:v1",
+  "title": "MetadataUpdateRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["metadata"],
+  "properties": {
+    "metadata": {
+      "type": "array",
+      "items": { "$ref": "image-metadata.schema.json" }
+    }
+  }
+}

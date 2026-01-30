@@ -1,0 +1,725 @@
+# /**
+#  * App: Picture Model
+#  * Package: codex/schema
+#  * File: openapi.yaml
+#  * Version: 0.1.0
+#  * Turns: 1
+#  * Author: codex
+#  * Date: 2026-01-29T22:54:22Z
+#  * Exports: N/A
+#  * Description: OpenAPI 3.1 specification for the Picture Model backend API.
+#  */
+openapi: 3.1.0
+info:
+  title: Picture Model API
+  version: "1.0.0"
+  description: REST API for the Picture Model application.
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: Drives
+    description: Drive management endpoints.
+  - name: Images
+    description: Image and metadata endpoints.
+  - name: Tags
+    description: Tag management endpoints.
+  - name: Crawler
+    description: Crawl job endpoints.
+  - name: Search
+    description: Search endpoints.
+  - name: Files
+    description: File streaming endpoints.
+paths:
+  /api/drives:
+    get:
+      tags: [Drives]
+      summary: List drives
+      operationId: listDrives
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./drive-list-response.schema.json"
+    post:
+      tags: [Drives]
+      summary: Create drive
+      operationId: createDrive
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./drive-create-request.schema.json"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "./drive-detail-response.schema.json"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+  /api/drives/{driveId}:
+    get:
+      tags: [Drives]
+      summary: Get drive
+      operationId: getDrive
+      parameters:
+        - in: path
+          name: driveId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./drive-detail-response.schema.json"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+    put:
+      tags: [Drives]
+      summary: Update drive
+      operationId: updateDrive
+      parameters:
+        - in: path
+          name: driveId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./drive-update-request.schema.json"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./drive-detail-response.schema.json"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+    delete:
+      tags: [Drives]
+      summary: Delete drive
+      operationId: deleteDrive
+      parameters:
+        - in: path
+          name: driveId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/drives/{driveId}/connect:
+    post:
+      tags: [Drives]
+      summary: Connect drive
+      operationId: connectDrive
+      parameters:
+        - in: path
+          name: driveId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./drive-detail-response.schema.json"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+  /api/drives/{driveId}/disconnect:
+    post:
+      tags: [Drives]
+      summary: Disconnect drive
+      operationId: disconnectDrive
+      parameters:
+        - in: path
+          name: driveId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./drive-detail-response.schema.json"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+  /api/drives/{driveId}/status:
+    get:
+      tags: [Drives]
+      summary: Get drive status
+      operationId: getDriveStatus
+      parameters:
+        - in: path
+          name: driveId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DriveStatus"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+  /api/drives/{driveId}/test:
+    post:
+      tags: [Drives]
+      summary: Test drive connection
+      operationId: testDriveConnection
+      parameters:
+        - in: path
+          name: driveId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionTestResult"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+  /api/drives/{driveId}/tree:
+    get:
+      tags: [Drives]
+      summary: Get drive directory tree
+      operationId: getDriveDirectoryTree
+      parameters:
+        - in: path
+          name: driveId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: path
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./directory-node.schema.json"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+  /api/images:
+    get:
+      tags: [Images]
+      summary: List images
+      operationId: listImages
+      parameters:
+        - in: query
+          name: driveId
+          schema:
+            type: string
+        - in: query
+          name: tagId
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: size
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./image-list-response.schema.json"
+  /api/images/{imageId}:
+    get:
+      tags: [Images]
+      summary: Get image detail
+      operationId: getImage
+      parameters:
+        - in: path
+          name: imageId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./image-detail-response.schema.json"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+    delete:
+      tags: [Images]
+      summary: Delete image
+      operationId: deleteImage
+      parameters:
+        - in: path
+          name: imageId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/images/{imageId}/metadata:
+    put:
+      tags: [Images]
+      summary: Update image metadata
+      operationId: updateImageMetadata
+      parameters:
+        - in: path
+          name: imageId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./metadata-update-request.schema.json"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./image-detail-response.schema.json"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+  /api/images/{imageId}/tags:
+    post:
+      tags: [Images]
+      summary: Add tags to image
+      operationId: addImageTags
+      parameters:
+        - in: path
+          name: imageId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./image-tags-update-request.schema.json"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./image-detail-response.schema.json"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+  /api/images/{imageId}/tags/{tagId}:
+    delete:
+      tags: [Images]
+      summary: Remove tag from image
+      operationId: removeImageTag
+      parameters:
+        - in: path
+          name: imageId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: tagId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/tags:
+    get:
+      tags: [Tags]
+      summary: List tags
+      operationId: listTags
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./tag-list-response.schema.json"
+    post:
+      tags: [Tags]
+      summary: Create tag
+      operationId: createTag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./tag-create-request.schema.json"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "./tag.schema.json"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+  /api/tags/{tagId}:
+    put:
+      tags: [Tags]
+      summary: Update tag
+      operationId: updateTag
+      parameters:
+        - in: path
+          name: tagId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./tag-update-request.schema.json"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./tag.schema.json"
+    delete:
+      tags: [Tags]
+      summary: Delete tag
+      operationId: deleteTag
+      parameters:
+        - in: path
+          name: tagId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/crawler/start:
+    post:
+      tags: [Crawler]
+      summary: Start crawl job
+      operationId: startCrawl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./crawl-start-request.schema.json"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "./crawl-detail-response.schema.json"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+  /api/crawler/jobs:
+    get:
+      tags: [Crawler]
+      summary: List crawl jobs
+      operationId: listCrawlJobs
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./crawl-list-response.schema.json"
+  /api/crawler/jobs/{jobId}:
+    get:
+      tags: [Crawler]
+      summary: Get crawl job
+      operationId: getCrawlJob
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./crawl-detail-response.schema.json"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+  /api/crawler/jobs/{jobId}/cancel:
+    post:
+      tags: [Crawler]
+      summary: Cancel crawl job
+      operationId: cancelCrawlJob
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./crawl-detail-response.schema.json"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+  /api/search:
+    get:
+      tags: [Search]
+      summary: Search images
+      operationId: searchImages
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: driveId
+          schema:
+            type: string
+        - in: query
+          name: tagId
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: size
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./search-response.schema.json"
+  /api/files/{imageId}:
+    get:
+      tags: [Files]
+      summary: Stream full image file
+      operationId: streamImageFile
+      parameters:
+        - in: path
+          name: imageId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+  /api/files/{imageId}/thumbnail:
+    get:
+      tags: [Files]
+      summary: Stream image thumbnail
+      operationId: streamImageThumbnail
+      parameters:
+        - in: path
+          name: imageId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.schema.json"
+components:
+  schemas:
+    RemoteFileDrive:
+      $ref: "./remote-file-drive.schema.json"
+    Image:
+      $ref: "./image.schema.json"
+    ImageMetadata:
+      $ref: "./image-metadata.schema.json"
+    Tag:
+      $ref: "./tag.schema.json"
+    CrawlJob:
+      $ref: "./crawl-job.schema.json"
+    DirectoryNode:
+      $ref: "./directory-node.schema.json"
+    Error:
+      $ref: "./error.schema.json"
+    DriveStatus:
+      type: object
+      additionalProperties: false
+      required:
+        - driveId
+        - status
+      properties:
+        driveId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [DISCONNECTED, CONNECTING, CONNECTED, ERROR]
+        lastConnected:
+          type: string
+          format: date-time
+        lastError:
+          type: string
+        isHealthy:
+          type: boolean
+        latencyMs:
+          type: integer
+          minimum: 0
+    ConnectionTestResult:
+      type: object
+      additionalProperties: false
+      required:
+        - success
+        - message
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        latencyMs:
+          type: integer
+          minimum: 0
+        driveInfo:
+          type: object
+          additionalProperties: false
+          properties:
+            availableSpace:
+              type: integer
+            totalSpace:
+              type: integer
+            isReadOnly:
+              type: boolean

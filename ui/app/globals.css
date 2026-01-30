@@ -1,14 +1,4 @@
-/**
- * App: Picture Model
- * Package: ui
- * File: globals.css
- * Version: 0.1.0
- * Turns: 1
- * Author: Codex
- * Date: 2026-01-29T22:11:12Z
- * Exports: None
- * Description: Global styles, theme tokens, and utility animations.
- */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

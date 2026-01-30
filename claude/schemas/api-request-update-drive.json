@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-request-update-drive.json",
+  "title": "UpdateDriveRequest",
+  "description": "Request body for updating an existing remote file drive",
+  "type": "object",
+  "required": ["name"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "User-friendly name for the drive",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "credentials": {
+      "type": "object",
+      "description": "Updated authentication credentials (optional, will be encrypted)",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        }
+      }
+    },
+    "autoConnect": {
+      "type": "boolean",
+      "description": "Automatically connect to drive on application startup"
+    },
+    "autoCrawl": {
+      "type": "boolean",
+      "description": "Automatically start crawling when drive is connected"
+    }
+  },
+  "additionalProperties": false
+}

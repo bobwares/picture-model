@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-response-system-status.json",
+  "title": "SystemStatusDto",
+  "description": "Overall system status and statistics",
+  "type": "object",
+  "required": ["status", "version", "totalImages", "totalDrives"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["UP", "DOWN", "DEGRADED"],
+      "description": "Overall system status"
+    },
+    "version": {
+      "type": "string",
+      "description": "Application version",
+      "examples": ["2.0.0"]
+    },
+    "totalImages": {
+      "type": "integer",
+      "description": "Total number of images indexed",
+      "minimum": 0
+    },
+    "totalDrives": {
+      "type": "integer",
+      "description": "Total number of configured drives",
+      "minimum": 0
+    },
+    "connectedDrives": {
+      "type": "integer",
+      "description": "Number of currently connected drives",
+      "minimum": 0
+    },
+    "activeCrawls": {
+      "type": "integer",
+      "description": "Number of active crawl jobs",
+      "minimum": 0
+    },
+    "uptimeMs": {
+      "type": "integer",
+      "description": "System uptime in milliseconds",
+      "minimum": 0
+    },
+    "databaseStatus": {
+      "type": "string",
+      "enum": ["UP", "DOWN"],
+      "description": "Database connection status"
+    }
+  },
+  "additionalProperties": false
+}

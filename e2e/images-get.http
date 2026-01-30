@@ -1,0 +1,16 @@
+# /**
+#  * App: Picture Model
+#  * Package: e2e
+#  * File: images-get.http
+#  * Version: 0.1.0
+#  * Turns: 1
+#  * Author: codex
+#  * Date: 2026-01-29T22:54:22Z
+#  * Exports: N/A
+#  * Description: Get image detail.
+#  */
+@baseUrl = http://localhost:8080
+@imageId = 00000000-0000-0000-0000-000000000000
+
+GET {{baseUrl}}/api/images/{{imageId}}
+Accept: application/json

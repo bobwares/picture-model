@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:picture-model:schema:drive-list-response:v1",
+  "title": "DriveListResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items"],
+  "properties": {
+    "items": { "type": "array", "items": { "$ref": "remote-file-drive.schema.json" } }
+  }
+}

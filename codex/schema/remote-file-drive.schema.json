@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:picture-model:schema:remote-file-drive:v1",
+  "title": "RemoteFileDrive",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "type",
+    "connection_url",
+    "status",
+    "root_path",
+    "auto_connect",
+    "auto_crawl",
+    "image_count",
+    "created_date",
+    "modified_date"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string", "minLength": 1 },
+    "type": { "type": "string", "enum": ["LOCAL", "SMB", "SFTP", "FTP"] },
+    "connection_url": { "type": "string", "minLength": 1 },
+    "credentials": { "type": "string" },
+    "status": { "type": "string", "enum": ["CONNECTED", "DISCONNECTED", "ERROR", "CONNECTING"] },
+    "root_path": { "type": "string", "minLength": 1 },
+    "auto_connect": { "type": "boolean" },
+    "auto_crawl": { "type": "boolean" },
+    "last_connected": { "type": "string", "format": "date-time" },
+    "last_crawled": { "type": "string", "format": "date-time" },
+    "image_count": { "type": "integer", "minimum": 0 },
+    "created_date": { "type": "string", "format": "date-time" },
+    "modified_date": { "type": "string", "format": "date-time" }
+  }
+}

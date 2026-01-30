@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/common-enum-connection-status.json",
+  "title": "ConnectionStatus",
+  "description": "Connection status of a remote file drive",
+  "type": "string",
+  "enum": ["DISCONNECTED", "CONNECTING", "CONNECTED", "ERROR"],
+  "enumDescriptions": {
+    "DISCONNECTED": "Drive is not connected",
+    "CONNECTING": "Connection attempt in progress",
+    "CONNECTED": "Drive is successfully connected",
+    "ERROR": "Connection failed or encountered an error"
+  }
+}

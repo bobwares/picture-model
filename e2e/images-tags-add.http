@@ -1,0 +1,23 @@
+# /**
+#  * App: Picture Model
+#  * Package: e2e
+#  * File: images-tags-add.http
+#  * Version: 0.1.0
+#  * Turns: 1
+#  * Author: codex
+#  * Date: 2026-01-29T22:54:22Z
+#  * Exports: N/A
+#  * Description: Add tags to an image.
+#  */
+@baseUrl = http://localhost:8080
+@imageId = 00000000-0000-0000-0000-000000000000
+
+POST {{baseUrl}}/api/images/{{imageId}}/tags
+Content-Type: application/json
+Accept: application/json
+
+{
+  "tag_ids": [
+    "00000000-0000-0000-0000-000000000000"
+  ]
+}

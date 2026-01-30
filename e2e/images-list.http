@@ -1,0 +1,15 @@
+# /**
+#  * App: Picture Model
+#  * Package: e2e
+#  * File: images-list.http
+#  * Version: 0.1.0
+#  * Turns: 1
+#  * Author: codex
+#  * Date: 2026-01-29T22:54:22Z
+#  * Exports: N/A
+#  * Description: List images.
+#  */
+@baseUrl = http://localhost:8080
+
+GET {{baseUrl}}/api/images?page=0&size=25
+Accept: application/json

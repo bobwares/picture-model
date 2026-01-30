@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-response-tag.json",
+  "title": "TagDto",
+  "description": "Tag information with usage statistics",
+  "type": "object",
+  "required": ["id", "name", "usageCount", "createdDate"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the tag"
+    },
+    "name": {
+      "type": "string",
+      "description": "Tag name (unique)",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "color": {
+      "type": "string",
+      "description": "Hex color code for UI display",
+      "pattern": "^#[0-9A-Fa-f]{6}$",
+      "examples": ["#FF5733", "#3498DB", "#2ECC71"]
+    },
+    "usageCount": {
+      "type": "integer",
+      "description": "Number of images with this tag",
+      "minimum": 0
+    },
+    "createdDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the tag was created"
+    }
+  },
+  "additionalProperties": false
+}

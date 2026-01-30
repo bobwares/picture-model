@@ -1,0 +1,22 @@
+# /**
+#  * App: Picture Model
+#  * Package: e2e
+#  * File: crawler-start.http
+#  * Version: 0.1.0
+#  * Turns: 1
+#  * Author: codex
+#  * Date: 2026-01-29T22:54:22Z
+#  * Exports: N/A
+#  * Description: Start a crawl job.
+#  */
+@baseUrl = http://localhost:8080
+
+POST {{baseUrl}}/api/crawler/start
+Content-Type: application/json
+Accept: application/json
+
+{
+  "drive_id": "00000000-0000-0000-0000-000000000000",
+  "root_path": "/",
+  "is_incremental": true
+}

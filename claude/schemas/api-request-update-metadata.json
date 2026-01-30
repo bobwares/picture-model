@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-request-update-metadata.json",
+  "title": "UpdateMetadataRequest",
+  "description": "Request body for updating image metadata",
+  "type": "object",
+  "description": "Map of metadata key-value pairs to update",
+  "patternProperties": {
+    "^[a-z_]+$": {
+      "type": "string",
+      "description": "Metadata value"
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "description": "Beautiful sunset at the beach",
+      "location": "Santa Monica, CA",
+      "notes": "Taken during vacation"
+    }
+  ]
+}

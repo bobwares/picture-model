@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:picture-model:schema:drive-update-request:v1",
+  "title": "DriveUpdateRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "connection_url": { "type": "string", "minLength": 1 },
+    "credentials": { "type": "string" },
+    "root_path": { "type": "string", "minLength": 1 },
+    "auto_connect": { "type": "boolean" },
+    "auto_crawl": { "type": "boolean" }
+  }
+}

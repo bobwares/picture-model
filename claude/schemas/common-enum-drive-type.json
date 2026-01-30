@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/common-enum-drive-type.json",
+  "title": "DriveType",
+  "description": "Enumeration of supported remote file drive types",
+  "type": "string",
+  "enum": ["LOCAL", "SMB", "SFTP", "FTP"],
+  "enumDescriptions": {
+    "LOCAL": "Local file system access",
+    "SMB": "Windows network share (SMB/CIFS protocol)",
+    "SFTP": "SSH File Transfer Protocol",
+    "FTP": "File Transfer Protocol"
+  }
+}

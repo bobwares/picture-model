@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:picture-model:schema:image-list-response:v1",
+  "title": "ImageListResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items", "page_info"],
+  "properties": {
+    "items": { "type": "array", "items": { "$ref": "image.schema.json" } },
+    "page_info": { "$ref": "page-info.schema.json" }
+  }
+}

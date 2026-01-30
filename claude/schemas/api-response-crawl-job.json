@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-response-crawl-job.json",
+  "title": "CrawlJobDto",
+  "description": "Crawl job status and statistics",
+  "type": "object",
+  "required": ["id", "driveId", "driveName", "rootPath", "status", "startTime", "isIncremental"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the crawl job"
+    },
+    "driveId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the drive being crawled"
+    },
+    "driveName": {
+      "type": "string",
+      "description": "Name of the drive being crawled"
+    },
+    "rootPath": {
+      "type": "string",
+      "description": "Root directory path being crawled",
+      "maxLength": 2000
+    },
+    "status": {
+      "$ref": "common-enum-crawl-status.json",
+      "description": "Current status of the crawl job"
+    },
+    "startTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the crawl started"
+    },
+    "endTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the crawl completed (null if still running)"
+    },
+    "filesProcessed": {
+      "type": "integer",
+      "description": "Number of files processed so far",
+      "minimum": 0,
+      "default": 0
+    },
+    "filesAdded": {
+      "type": "integer",
+      "description": "Number of new images added",
+      "minimum": 0,
+      "default": 0
+    },
+    "filesUpdated": {
+      "type": "integer",
+      "description": "Number of existing images updated",
+      "minimum": 0,
+      "default": 0
+    },
+    "filesDeleted": {
+      "type": "integer",
+      "description": "Number of missing files marked as deleted",
+      "minimum": 0,
+      "default": 0
+    },
+    "errorCount": {
+      "type": "integer",
+      "description": "Number of errors encountered",
+      "minimum": 0,
+      "default": 0
+    },
+    "currentPath": {
+      "type": "string",
+      "description": "Current path being processed (for progress tracking)",
+      "maxLength": 2000
+    },
+    "isIncremental": {
+      "type": "boolean",
+      "description": "Whether this is an incremental crawl or full crawl"
+    },
+    "errors": {
+      "type": "array",
+      "description": "Error messages encountered during crawl",
+      "items": {
+        "type": "string"
+      }
+    },
+    "progressPercentage": {
+      "type": "number",
+      "description": "Estimated progress percentage (0-100)",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "elapsedTimeMs": {
+      "type": "integer",
+      "description": "Elapsed time in milliseconds",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-response-directory-tree.json",
+  "title": "DirectoryTreeDto",
+  "description": "Hierarchical directory tree structure",
+  "type": "object",
+  "required": ["path", "name", "isDirectory"],
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Full path to this directory",
+      "maxLength": 2000
+    },
+    "name": {
+      "type": "string",
+      "description": "Directory name",
+      "maxLength": 500
+    },
+    "isDirectory": {
+      "type": "boolean",
+      "description": "Whether this is a directory (always true for tree nodes)"
+    },
+    "imageCount": {
+      "type": "integer",
+      "description": "Number of images directly in this directory",
+      "minimum": 0
+    },
+    "totalImageCount": {
+      "type": "integer",
+      "description": "Total number of images including subdirectories",
+      "minimum": 0
+    },
+    "children": {
+      "type": "array",
+      "description": "Child directories",
+      "items": {
+        "$ref": "#"
+      }
+    },
+    "expanded": {
+      "type": "boolean",
+      "description": "UI state: whether this node is expanded",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

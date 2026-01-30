@@ -1,0 +1,21 @@
+# /**
+#  * App: Picture Model
+#  * Package: e2e
+#  * File: tags-create.http
+#  * Version: 0.1.0
+#  * Turns: 1
+#  * Author: codex
+#  * Date: 2026-01-29T22:54:22Z
+#  * Exports: N/A
+#  * Description: Create a tag.
+#  */
+@baseUrl = http://localhost:8080
+
+POST {{baseUrl}}/api/tags
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Sample Tag",
+  "color": "#3b82f6"
+}

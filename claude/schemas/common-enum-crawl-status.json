@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/common-enum-crawl-status.json",
+  "title": "CrawlStatus",
+  "description": "Status of a crawl job",
+  "type": "string",
+  "enum": ["PENDING", "IN_PROGRESS", "PAUSED", "COMPLETED", "FAILED", "CANCELLED"],
+  "enumDescriptions": {
+    "PENDING": "Crawl job is queued and waiting to start",
+    "IN_PROGRESS": "Crawl job is currently running",
+    "PAUSED": "Crawl job has been paused",
+    "COMPLETED": "Crawl job completed successfully",
+    "FAILED": "Crawl job failed with errors",
+    "CANCELLED": "Crawl job was cancelled by user"
+  }
+}

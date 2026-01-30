@@ -1,0 +1,15 @@
+# /**
+#  * App: Picture Model
+#  * Package: e2e
+#  * File: tags-list.http
+#  * Version: 0.1.0
+#  * Turns: 1
+#  * Author: codex
+#  * Date: 2026-01-29T22:54:22Z
+#  * Exports: N/A
+#  * Description: List tags.
+#  */
+@baseUrl = http://localhost:8080
+
+GET {{baseUrl}}/api/tags
+Accept: application/json

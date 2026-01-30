@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:picture-model:schema:image-metadata:v1",
+  "title": "ImageMetadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "image_id", "key", "source", "last_modified"],
+  "properties": {
+    "id": { "type": "string" },
+    "image_id": { "type": "string" },
+    "key": { "type": "string", "minLength": 1 },
+    "value": { "type": "string" },
+    "source": { "type": "string", "enum": ["EXIF", "USER_ENTERED", "AUTO_GENERATED"] },
+    "last_modified": { "type": "string", "format": "date-time" }
+  }
+}

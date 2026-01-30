@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-request-create-tag.json",
+  "title": "CreateTagRequest",
+  "description": "Request body for creating a new tag",
+  "type": "object",
+  "required": ["name"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Tag name (must be unique)",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[a-zA-Z0-9\\s_-]+$"
+    },
+    "color": {
+      "type": "string",
+      "description": "Hex color code for UI display (optional)",
+      "pattern": "^#[0-9A-Fa-f]{6}$",
+      "examples": ["#FF5733", "#3498DB"]
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:picture-model:schema:directory-node:v1",
+  "title": "DirectoryNode",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "drive_id", "path", "name", "image_count", "total_image_count", "last_updated"],
+  "properties": {
+    "id": { "type": "string" },
+    "drive_id": { "type": "string" },
+    "path": { "type": "string", "minLength": 1 },
+    "parent_path": { "type": "string" },
+    "name": { "type": "string", "minLength": 1 },
+    "image_count": { "type": "integer", "minimum": 0 },
+    "total_image_count": { "type": "integer", "minimum": 0 },
+    "last_updated": { "type": "string", "format": "date-time" }
+  }
+}

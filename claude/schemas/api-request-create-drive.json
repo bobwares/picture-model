@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-request-create-drive.json",
+  "title": "CreateDriveRequest",
+  "description": "Request body for creating a new remote file drive",
+  "type": "object",
+  "required": ["name", "type", "connectionUrl", "rootPath"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "User-friendly name for the drive",
+      "minLength": 1,
+      "maxLength": 200,
+      "examples": ["Home NAS", "External Drive 1", "Office Server"]
+    },
+    "type": {
+      "$ref": "common-enum-drive-type.json",
+      "description": "Type of remote file drive"
+    },
+    "connectionUrl": {
+      "type": "string",
+      "description": "Connection URL or path to the drive",
+      "maxLength": 1000,
+      "examples": [
+        "/Users/user/Pictures",
+        "smb://nas.local/photos",
+        "sftp://server.com:22/images"
+      ]
+    },
+    "rootPath": {
+      "type": "string",
+      "description": "Root directory path on the drive to start indexing from",
+      "maxLength": 1000,
+      "examples": ["/", "/photos", "/archive/2024"]
+    },
+    "credentials": {
+      "type": "object",
+      "description": "Authentication credentials (will be encrypted)",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "Username for authentication"
+        },
+        "password": {
+          "type": "string",
+          "description": "Password for authentication"
+        },
+        "host": {
+          "type": "string",
+          "description": "Host address (for SFTP/FTP)"
+        },
+        "port": {
+          "type": "integer",
+          "description": "Port number (for SFTP/FTP)",
+          "minimum": 1,
+          "maximum": 65535
+        }
+      }
+    },
+    "autoConnect": {
+      "type": "boolean",
+      "description": "Automatically connect to drive on application startup",
+      "default": false
+    },
+    "autoCrawl": {
+      "type": "boolean",
+      "description": "Automatically start crawling when drive is connected",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

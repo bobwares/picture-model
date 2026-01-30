@@ -1,0 +1,15 @@
+# /**
+#  * App: Picture Model
+#  * Package: e2e
+#  * File: tags-delete.http
+#  * Version: 0.1.0
+#  * Turns: 1
+#  * Author: codex
+#  * Date: 2026-01-29T22:54:22Z
+#  * Exports: N/A
+#  * Description: Delete a tag.
+#  */
+@baseUrl = http://localhost:8080
+@tagId = 00000000-0000-0000-0000-000000000000
+
+DELETE {{baseUrl}}/api/tags/{{tagId}}

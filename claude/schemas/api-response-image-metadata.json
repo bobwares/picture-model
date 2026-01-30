@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-response-image-metadata.json",
+  "title": "ImageMetadataDto",
+  "description": "Metadata key-value pair for an image",
+  "type": "object",
+  "required": ["id", "key", "value", "source", "lastModified"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this metadata entry"
+    },
+    "key": {
+      "type": "string",
+      "description": "Metadata key (normalized lowercase)",
+      "maxLength": 255,
+      "examples": ["camera_model", "location", "description", "iso", "aperture"]
+    },
+    "value": {
+      "type": "string",
+      "description": "Metadata value"
+    },
+    "source": {
+      "$ref": "common-enum-metadata-source.json",
+      "description": "Source of this metadata"
+    },
+    "lastModified": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this metadata was last updated"
+    }
+  },
+  "additionalProperties": false
+}

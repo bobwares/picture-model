@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:picture-model:schema:tag-list-response:v1",
+  "title": "TagListResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items"],
+  "properties": {
+    "items": { "type": "array", "items": { "$ref": "tag.schema.json" } }
+  }
+}

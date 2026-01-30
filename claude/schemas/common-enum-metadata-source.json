@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/common-enum-metadata-source.json",
+  "title": "MetadataSource",
+  "description": "Source of image metadata",
+  "type": "string",
+  "enum": ["EXIF", "USER_ENTERED", "AUTO_GENERATED"],
+  "enumDescriptions": {
+    "EXIF": "Extracted from EXIF data in the image file",
+    "USER_ENTERED": "Manually entered by the user",
+    "AUTO_GENERATED": "Generated automatically by the system (e.g., face detection, AI tagging)"
+  }
+}

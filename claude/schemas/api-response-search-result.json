@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-response-search-result.json",
+  "title": "SearchResult",
+  "description": "Paginated search results for images",
+  "type": "object",
+  "required": ["content", "page", "size", "totalElements", "totalPages"],
+  "properties": {
+    "content": {
+      "type": "array",
+      "description": "Array of image summaries matching the search",
+      "items": {
+        "$ref": "api-response-image-summary.json"
+      }
+    },
+    "page": {
+      "type": "integer",
+      "description": "Current page number (0-indexed)",
+      "minimum": 0
+    },
+    "size": {
+      "type": "integer",
+      "description": "Number of items per page",
+      "minimum": 1
+    },
+    "totalElements": {
+      "type": "integer",
+      "description": "Total number of matching images",
+      "minimum": 0
+    },
+    "totalPages": {
+      "type": "integer",
+      "description": "Total number of pages",
+      "minimum": 0
+    },
+    "first": {
+      "type": "boolean",
+      "description": "Whether this is the first page"
+    },
+    "last": {
+      "type": "boolean",
+      "description": "Whether this is the last page"
+    }
+  },
+  "additionalProperties": false
+}

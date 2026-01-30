@@ -1,0 +1,26 @@
+# /**
+#  * App: Picture Model
+#  * Package: e2e
+#  * File: drives-create.http
+#  * Version: 0.1.0
+#  * Turns: 1
+#  * Author: codex
+#  * Date: 2026-01-29T22:54:22Z
+#  * Exports: N/A
+#  * Description: Create a drive.
+#  */
+@baseUrl = http://localhost:8080
+
+POST {{baseUrl}}/api/drives
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Sample Drive",
+  "type": "LOCAL",
+  "connection_url": "/tmp",
+  "credentials": "{\"username\":\"user\",\"password\":\"pass\"}",
+  "root_path": "/",
+  "auto_connect": false,
+  "auto_crawl": false
+}

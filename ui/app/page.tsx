@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: ui/app
  * File: page.tsx
- * Version: 0.1.0
- * Turns: 1
- * Author: Codex
- * Date: 2026-01-29T22:11:12Z
+ * Version: 0.1.2
+ * Turns: 1,5
+ * Author: Bobwares (bobwares@outlook.com)
+ * Date: 2026-01-30T08:34:12Z
  * Exports: DashboardPage
  * Description: Dashboard landing page for drives, stats, and recent activity.
  */
@@ -67,7 +67,7 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="grid grid-cols-4 gap-4">
           <StatsCard
             title="Total Images"
             value={systemStatus?.totalImages?.toLocaleString() || '0'}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:picture-model:schema:page-info:v1",
+  "title": "PageInfo",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["page", "size", "total"],
+  "properties": {
+    "page": { "type": "integer", "minimum": 0 },
+    "size": { "type": "integer", "minimum": 1 },
+    "total": { "type": "integer", "minimum": 0 }
+  }
+}

@@ -1,0 +1,56 @@
+# App: Picture Model
+# Package: docker
+# File: docker-compose.yml
+# Version: 0.1.0
+# Turns: 5
+# Author: codex
+# Date: 2026-01-30T00:39:15Z
+# Exports: docker compose services
+# Description: Local development Docker Compose services for PostgreSQL and tooling.
+
+version: '3.8'
+
+services:
+  postgresql-db:
+    build:
+      context: .
+      dockerfile: docker/postgresql/Dockerfile
+    container_name: picturemodel-postgresql
+    env_file:
+      - .env.postgresql
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+      - ./db:/app/db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - postgresql
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: picturemodel-pgadmin
+    env_file:
+      - .env.postgresql
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "${PGADMIN_PORT}:80"
+    depends_on:
+      - postgresql-db
+    profiles:
+      - tools
+
+volumes:
+  postgres_data:
+    driver: local

@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-response-remote-file-drive.json",
+  "title": "RemoteFileDriveDto",
+  "description": "Response DTO for remote file drive information",
+  "type": "object",
+  "required": ["id", "name", "type", "connectionUrl", "rootPath", "status", "autoConnect", "autoCrawl", "imageCount", "createdDate", "modifiedDate"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the drive"
+    },
+    "name": {
+      "type": "string",
+      "description": "User-friendly name for the drive",
+      "maxLength": 200
+    },
+    "type": {
+      "$ref": "common-enum-drive-type.json",
+      "description": "Type of remote file drive"
+    },
+    "connectionUrl": {
+      "type": "string",
+      "description": "Connection URL or path to the drive",
+      "maxLength": 1000
+    },
+    "rootPath": {
+      "type": "string",
+      "description": "Root directory path on the drive",
+      "maxLength": 1000
+    },
+    "status": {
+      "$ref": "common-enum-connection-status.json",
+      "description": "Current connection status"
+    },
+    "autoConnect": {
+      "type": "boolean",
+      "description": "Automatically connect on startup"
+    },
+    "autoCrawl": {
+      "type": "boolean",
+      "description": "Automatically crawl when connected"
+    },
+    "lastConnected": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last successful connection"
+    },
+    "lastCrawled": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last completed crawl"
+    },
+    "imageCount": {
+      "type": "integer",
+      "description": "Total number of images indexed on this drive",
+      "minimum": 0
+    },
+    "createdDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the drive was added to the system"
+    },
+    "modifiedDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the drive configuration was last modified"
+    }
+  },
+  "additionalProperties": false
+}

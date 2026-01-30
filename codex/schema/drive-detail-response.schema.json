@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:picture-model:schema:drive-detail-response:v1",
+  "title": "DriveDetailResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["drive"],
+  "properties": {
+    "drive": { "$ref": "remote-file-drive.schema.json" }
+  }
+}

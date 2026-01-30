@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:picture-model:schema:crawl-detail-response:v1",
+  "title": "CrawlDetailResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["job"],
+  "properties": {
+    "job": { "$ref": "crawl-job.schema.json" }
+  }
+}

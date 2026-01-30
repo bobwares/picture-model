@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:picture-model:schema:image-detail-response:v1",
+  "title": "ImageDetailResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["image", "metadata", "tags"],
+  "properties": {
+    "image": { "$ref": "image.schema.json" },
+    "metadata": {
+      "type": "array",
+      "items": { "$ref": "image-metadata.schema.json" }
+    },
+    "tags": {
+      "type": "array",
+      "items": { "$ref": "tag.schema.json" }
+    }
+  }
+}

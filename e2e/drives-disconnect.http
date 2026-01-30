@@ -1,0 +1,16 @@
+# /**
+#  * App: Picture Model
+#  * Package: e2e
+#  * File: drives-disconnect.http
+#  * Version: 0.1.0
+#  * Turns: 1
+#  * Author: codex
+#  * Date: 2026-01-29T22:54:22Z
+#  * Exports: N/A
+#  * Description: Disconnect a drive.
+#  */
+@baseUrl = http://localhost:8080
+@driveId = 00000000-0000-0000-0000-000000000000
+
+POST {{baseUrl}}/api/drives/{{driveId}}/disconnect
+Accept: application/json

@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/ws-event-crawl-progress.json",
+  "title": "CrawlProgressEvent",
+  "description": "WebSocket event for real-time crawl progress updates",
+  "type": "object",
+  "required": ["jobId", "status", "filesProcessed", "filesAdded", "filesUpdated", "timestamp"],
+  "properties": {
+    "jobId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the crawl job"
+    },
+    "status": {
+      "$ref": "common-enum-crawl-status.json",
+      "description": "Current status"
+    },
+    "filesProcessed": {
+      "type": "integer",
+      "description": "Number of files processed",
+      "minimum": 0
+    },
+    "filesAdded": {
+      "type": "integer",
+      "description": "Number of new images added",
+      "minimum": 0
+    },
+    "filesUpdated": {
+      "type": "integer",
+      "description": "Number of images updated",
+      "minimum": 0
+    },
+    "currentPath": {
+      "type": "string",
+      "description": "Current path being processed"
+    },
+    "progressPercentage": {
+      "type": "number",
+      "description": "Progress percentage",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Event timestamp"
+    }
+  },
+  "additionalProperties": false
+}

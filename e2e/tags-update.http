@@ -1,0 +1,22 @@
+# /**
+#  * App: Picture Model
+#  * Package: e2e
+#  * File: tags-update.http
+#  * Version: 0.1.0
+#  * Turns: 1
+#  * Author: codex
+#  * Date: 2026-01-29T22:54:22Z
+#  * Exports: N/A
+#  * Description: Update a tag.
+#  */
+@baseUrl = http://localhost:8080
+@tagId = 00000000-0000-0000-0000-000000000000
+
+PUT {{baseUrl}}/api/tags/{{tagId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Updated Tag",
+  "color": "#22c55e"
+}

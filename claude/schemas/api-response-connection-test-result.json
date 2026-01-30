@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-response-connection-test-result.json",
+  "title": "ConnectionTestResult",
+  "description": "Result of testing a connection to a remote drive",
+  "type": "object",
+  "required": ["success", "message"],
+  "properties": {
+    "success": {
+      "type": "boolean",
+      "description": "Whether the connection test was successful"
+    },
+    "message": {
+      "type": "string",
+      "description": "Status message or error description"
+    },
+    "latencyMs": {
+      "type": "integer",
+      "description": "Connection latency in milliseconds",
+      "minimum": 0
+    },
+    "driveInfo": {
+      "type": "object",
+      "description": "Information about the drive (if connection successful)",
+      "properties": {
+        "availableSpace": {
+          "type": "integer",
+          "description": "Available space in bytes"
+        },
+        "totalSpace": {
+          "type": "integer",
+          "description": "Total space in bytes"
+        },
+        "isReadOnly": {
+          "type": "boolean",
+          "description": "Whether the drive is read-only"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
