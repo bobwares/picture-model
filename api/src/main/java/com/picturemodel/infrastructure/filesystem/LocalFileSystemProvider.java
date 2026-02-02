@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: com.picturemodel.infrastructure.filesystem
  * File: LocalFileSystemProvider.java
- * Version: 0.1.0
+ * Version: 0.1.1
  * Turns: 5
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-30T02:03:52Z
+ * Date: 2026-01-30T23:05:49Z
  * Exports: LocalFileSystemProvider
  * Description: class LocalFileSystemProvider for LocalFileSystemProvider responsibilities. Methods: LocalFileSystemProvider - constructor; connect - connect; disconnect - disconnect; isConnected - is connected; listDirectory - list directory; getDirectoryTree - get directory tree; buildDirectoryTree - build directory tree; readFile - read file; getFileMetadata - get file metadata; fileExists - file exists; testConnection - test connection; createFileInfo - create file info; probeContentType - probe content type; isImageFile - is image file.
  */
@@ -70,7 +70,8 @@ public class LocalFileSystemProvider implements FileSystemProvider {
             throw new IllegalStateException("Not connected to file system");
         }
 
-        Path dirPath = Paths.get(rootPath, path);
+        String normalizedPath = normalizePath(path);
+        Path dirPath = Paths.get(rootPath, normalizedPath);
         List<FileInfo> fileInfos = new ArrayList<>();
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath)) {
@@ -88,14 +89,15 @@ public class LocalFileSystemProvider implements FileSystemProvider {
             throw new IllegalStateException("Not connected to file system");
         }
 
-        Path dirPath = Paths.get(rootPath, path);
-        return buildDirectoryTree(dirPath, path);
+        String normalizedPath = normalizePath(path);
+        Path dirPath = Paths.get(rootPath, normalizedPath);
+        return buildDirectoryTree(dirPath, normalizedPath);
     }
 
     private DirectoryTreeNode buildDirectoryTree(Path dirPath, String relativePath) throws IOException {
         DirectoryTreeNode node = DirectoryTreeNode.builder()
                 .name(dirPath.getFileName() != null ? dirPath.getFileName().toString() : rootPath)
-                .path(relativePath)
+                .path(relativePath.isEmpty() ? "/" : relativePath)
                 .build();
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath)) {
@@ -187,6 +189,20 @@ public class LocalFileSystemProvider implements FileSystemProvider {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    private String normalizePath(String path) {
+        if (path == null) {
+            return "";
+        }
+        String trimmed = path.trim();
+        if (trimmed.isEmpty() || "/".equals(trimmed)) {
+            return "";
+        }
+        if (trimmed.startsWith("/")) {
+            return trimmed.substring(1);
+        }
+        return trimmed;
     }
 
     private boolean isImageFile(Path path) {

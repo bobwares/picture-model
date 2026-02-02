@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: ui/components
  * File: directory-tree.tsx
- * Version: 0.1.0
- * Turns: 4
+ * Version: 0.1.1
+ * Turns: 4,6
  * Author: Claude
- * Date: 2026-01-29
+ * Date: 2026-02-02T06:39:18Z
  * Exports: DirectoryTree
  * Description: Full directory tree component with keyboard navigation
  */
@@ -17,7 +17,7 @@ import type { DirectoryTreeNode } from '@/types';
 import { FolderTree } from 'lucide-react';
 
 interface DirectoryTreeProps {
-  rootNode: DirectoryTreeNode;
+  rootNode?: DirectoryTreeNode | null;
   selectedPath?: string;
   onPathSelect: (path: string) => void;
   loading?: boolean;
@@ -29,13 +29,25 @@ export function DirectoryTree({
   onPathSelect,
   loading = false,
 }: DirectoryTreeProps) {
-  const [treeData, setTreeData] = useState<DirectoryTreeNode>(rootNode);
+  const normalizeRoot = (node?: DirectoryTreeNode | null): DirectoryTreeNode | null => {
+    if (!node) {
+      return null;
+    }
+    return { ...node, expanded: node.expanded ?? true };
+  };
+
+  const [treeData, setTreeData] = useState<DirectoryTreeNode | null>(
+    normalizeRoot(rootNode),
+  );
 
   useEffect(() => {
-    setTreeData(rootNode);
+    setTreeData(normalizeRoot(rootNode));
   }, [rootNode]);
 
   const toggleNode = (path: string) => {
+    if (!treeData) {
+      return;
+    }
     const updateNode = (node: DirectoryTreeNode): DirectoryTreeNode => {
       if (node.path === path) {
         return { ...node, expanded: !node.expanded };

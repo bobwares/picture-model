@@ -1,3 +1,14 @@
+/**
+ * App: Picture Model
+ * Package: ui/lib
+ * File: api-client.ts
+ * Version: 0.1.0
+ * Turns: 17
+ * Author: Bobwares (bobwares@outlook.com)
+ * Date: 2026-02-01T17:12:25Z
+ * Exports: apiClient, driveApi, imageApi, crawlerApi, tagApi, systemApi, getImageUrl, getThumbnailUrl
+ * Description: API client and endpoint wrappers for the UI. Methods: getImageUrl - build image URL; getThumbnailUrl - build thumbnail URL.
+ */
 import axios from 'axios';
 import type {
   RemoteFileDrive,
@@ -66,7 +77,13 @@ export const crawlerApi = {
     apiClient.get<{ content: CrawlJob[]; totalElements: number }>('/crawler/jobs', {
       params: { page, size },
     }),
+  listJobsByDrive: (driveId: string, page?: number, size?: number) =>
+    apiClient.get<{ content: CrawlJob[]; totalElements: number }>(
+      `/crawler/drives/${driveId}/jobs`,
+      { params: { page, size } }
+    ),
   cancelJob: (id: string) => apiClient.post<CrawlJob>(`/crawler/jobs/${id}/cancel`),
+  clearDriveHistory: (driveId: string) => apiClient.delete(`/crawler/drives/${driveId}/jobs`),
 };
 
 // Tag Management API

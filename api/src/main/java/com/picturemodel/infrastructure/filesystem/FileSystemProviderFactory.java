@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: com.picturemodel.infrastructure.filesystem
  * File: FileSystemProviderFactory.java
- * Version: 0.1.0
- * Turns: 5
+ * Version: 0.1.1
+ * Turns: 6
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-30T02:03:52Z
+ * Date: 2026-01-31T08:57:04Z
  * Exports: FileSystemProviderFactory
  * Description: class FileSystemProviderFactory for FileSystemProviderFactory responsibilities. Methods: createProvider - create provider; getStringValue - get string value; getIntValue - get int value; extractHostFromUrl - extract host from url.
  */
@@ -56,7 +56,8 @@ public class FileSystemProviderFactory {
 
         switch (type) {
             case LOCAL:
-                return new LocalFileSystemProvider(connectionUrl);
+                String localRoot = rootPath != null && !rootPath.isBlank() ? rootPath : connectionUrl;
+                return new LocalFileSystemProvider(localRoot);
 
             case SMB:
                 String smbUsername = getStringValue(credentials, "username", "");

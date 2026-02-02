@@ -2,16 +2,17 @@
  * App: Picture Model
  * Package: com.picturemodel.domain.entity
  * File: CrawlJob.java
- * Version: 0.1.0
- * Turns: 5
+ * Version: 0.1.3
+ * Turns: 5,16,17
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-30T02:03:52Z
+ * Date: 2026-02-01T17:13:10Z
  * Exports: CrawlJob
  * Description: class CrawlJob for CrawlJob responsibilities. Methods: onCreate - on create; getDurationSeconds - get duration seconds; getProgressPercentage - get progress percentage.
  */
 
 package com.picturemodel.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.picturemodel.domain.enums.CrawlStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -45,6 +46,7 @@ public class CrawlJob {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "drive_id", nullable = false)
+    @JsonIgnore
     private RemoteFileDrive drive;
 
     @Column(nullable = false, length = 2000)
@@ -117,5 +119,29 @@ public class CrawlJob {
         // For now, return a simple metric based on processed files
         // In real implementation, would need total files estimate
         return Math.min(100.0, (filesProcessed / 10.0)); // Placeholder logic
+    }
+
+    /**
+     * Expose drive ID without serializing the full drive entity.
+     */
+    @Transient
+    public UUID getDriveId() {
+        return drive != null ? drive.getId() : null;
+    }
+
+    /**
+     * Expose drive name without serializing the full drive entity.
+     */
+    @Transient
+    public String getDriveName() {
+        return drive != null ? drive.getName() : null;
+    }
+
+    /**
+     * Expose current path for API clients using a stable field name.
+     */
+    @Transient
+    public String getCurrentPath() {
+        return currentPathValue;
     }
 }

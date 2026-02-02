@@ -1,3 +1,16 @@
+/**
+ * App: Picture Model
+ * Package: ui/types
+ * File: index.ts
+ * Version: 0.1.2
+ * Turns: 5,11
+ * Author: Bobwares (bobwares@outlook.com)
+ * Date: 2026-02-01T17:00:16Z
+ * Exports: DriveType, ConnectionStatus, CrawlStatus, MetadataSource, RemoteFileDrive, CreateDriveRequest, Image, ImageMetadata, Tag, CrawlJob, StartCrawlRequest, SearchRequest, DirectoryTreeNode, SystemStatus
+ * Description: Core frontend types aligned with backend DTOs and schemas.
+ * index - exports shared type definitions for the UI.
+ */
+
 // Core domain types based on JSON schemas
 
 export type DriveType = 'LOCAL' | 'SMB' | 'SFTP' | 'FTP';
@@ -29,13 +42,7 @@ export interface CreateDriveRequest {
   type: DriveType;
   connectionUrl: string;
   rootPath: string;
-  credentials?: {
-    username?: string;
-    password?: string;
-    host?: string;
-    port?: number;
-    domain?: string;
-  };
+  credentials?: string;
   autoConnect?: boolean;
   autoCrawl?: boolean;
 }
@@ -91,6 +98,7 @@ export interface CrawlJob {
   filesUpdated: number;
   filesDeleted: number;
   currentPath?: string;
+  progressPercentage?: number;
   isIncremental: boolean;
   errors?: string;
 }

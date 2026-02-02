@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: ui/components
  * File: image-thumbnail.tsx
- * Version: 0.1.0
- * Turns: 4
+ * Version: 0.1.2
+ * Turns: 4,8,9
  * Author: Claude
- * Date: 2026-01-29
+ * Date: 2026-01-31T21:53:39Z
  * Exports: ImageThumbnail
  * Description: Image thumbnail component with selection and hover states
  */
@@ -21,6 +21,7 @@ interface ImageThumbnailProps {
   selected?: boolean;
   onSelect?: (imageId: string) => void;
   onClick?: (imageId: string) => void;
+  onError?: (image: ImageType) => void;
   size?: 'small' | 'medium' | 'large';
 }
 
@@ -29,6 +30,7 @@ export function ImageThumbnail({
   selected = false,
   onSelect,
   onClick,
+  onError,
   size = 'medium',
 }: ImageThumbnailProps) {
   const [imageError, setImageError] = useState(false);
@@ -85,7 +87,13 @@ export function ImageThumbnail({
             fill
             sizes={size === 'small' ? '150px' : size === 'medium' ? '250px' : '350px'}
             className="object-cover"
-            onError={() => setImageError(true)}
+            unoptimized
+            onError={() => {
+              if (!imageError) {
+                setImageError(true);
+                onError?.(image);
+              }
+            }}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-[var(--muted)]">

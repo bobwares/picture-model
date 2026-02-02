@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: com.picturemodel.service
  * File: ConnectionManager.java
- * Version: 0.1.0
- * Turns: 5
+ * Version: 0.1.1
+ * Turns: 5,24
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-30T02:03:52Z
+ * Date: 2026-02-02T19:53:10Z
  * Exports: ConnectionManager
  * Description: class ConnectionManager for ConnectionManager responsibilities. Methods: connect - connect; disconnect - disconnect; getProvider - get provider; isConnected - is connected; performHealthCheck - perform health check; shutdown - shutdown; getActiveConnectionCount - get active connection count.
  */
@@ -24,6 +24,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,7 +67,12 @@ public class ConnectionManager {
             }
         }
 
-        log.info("Connecting to drive: {} ({})", drive.getName(), drive.getType());
+        log.info(
+                "Connecting to drive: {} ({}) at {}",
+                drive.getName(),
+                drive.getType(),
+                sanitizeConnectionUrl(drive.getConnectionUrl())
+        );
 
         // Update status to CONNECTING
         drive.setStatus(ConnectionStatus.CONNECTING);
@@ -202,5 +208,31 @@ public class ConnectionManager {
      */
     public int getActiveConnectionCount() {
         return providerCache.size();
+    }
+
+    private String sanitizeConnectionUrl(String url) {
+        if (url == null || url.isBlank()) {
+            return "[missing]";
+        }
+        try {
+            URI uri = new URI(url);
+            String userInfo = uri.getUserInfo();
+            if (userInfo == null || userInfo.isBlank()) {
+                return url;
+            }
+            String maskedUserInfo = userInfo.replaceFirst(":(.*)$", ":***");
+            URI sanitized = new URI(
+                    uri.getScheme(),
+                    maskedUserInfo,
+                    uri.getHost(),
+                    uri.getPort(),
+                    uri.getPath(),
+                    uri.getQuery(),
+                    uri.getFragment()
+            );
+            return sanitized.toString();
+        } catch (Exception e) {
+            return url.replaceAll("//([^/@:]+):([^@]+)@", "//$1:***@");
+        }
     }
 }

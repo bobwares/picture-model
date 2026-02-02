@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: ui/app/search
  * File: page.tsx
- * Version: 0.1.0
- * Turns: 4
+ * Version: 0.1.2
+ * Turns: 4,9,10
  * Author: Claude
- * Date: 2026-01-29
+ * Date: 2026-01-31T22:03:03Z
  * Exports: SearchPage
  * Description: Search results view with advanced filtering
  */
@@ -117,6 +117,12 @@ export default function SearchPage() {
   const handleImageClick = (imageId: string) => {
     const image = images.find((img) => img.id === imageId);
     if (image) {
+      if (typeof window !== 'undefined') {
+        const ids = images
+          .filter((img) => img.driveId === image.driveId)
+          .map((img) => img.id);
+        window.sessionStorage.setItem(`image-nav:${image.driveId}`, JSON.stringify({ ids }));
+      }
       router.push(`/image/${image.driveId}/${imageId}`);
     }
   };
@@ -272,6 +278,7 @@ export default function SearchPage() {
               selectedImageIds={selectedImageIds}
               onImageSelect={handleImageSelect}
               onImageClick={handleImageClick}
+              resetKey={`${query}-${sortBy}`}
               size="medium"
               emptyMessage={
                 !query

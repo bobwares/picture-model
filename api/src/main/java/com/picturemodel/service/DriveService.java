@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: com.picturemodel.service
  * File: DriveService.java
- * Version: 0.1.0
+ * Version: 0.1.1
  * Turns: 5
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-30T02:03:52Z
+ * Date: 2026-01-30T23:05:49Z
  * Exports: DriveService
  * Description: class DriveService for DriveService responsibilities. Methods: createDrive - create drive; getAllDrives - get all drives; getDrive - get drive; updateDrive - update drive; deleteDrive - delete drive; connect - connect; disconnect - disconnect; testConnection - test connection; getDirectoryTree - get directory tree; getStatus - get status.
  */
@@ -237,12 +237,30 @@ public class DriveService {
 
         try {
             FileSystemProvider provider = connectionManager.getProvider(id);
-            String searchPath = (path == null || path.isEmpty()) ? "/" : path;
-            return provider.getDirectoryTree(searchPath);
+            String searchPath = normalizeTreePath(path);
+            DirectoryTreeNode tree = provider.getDirectoryTree(searchPath);
+            if (tree != null && (tree.getPath() == null || tree.getPath().isEmpty())) {
+                tree.setPath("/");
+            }
+            return tree;
         } catch (Exception e) {
             log.error("Failed to get directory tree", e);
             throw new RuntimeException("Failed to get directory tree: " + e.getMessage(), e);
         }
+    }
+
+    private String normalizeTreePath(String path) {
+        if (path == null) {
+            return "";
+        }
+        String trimmed = path.trim();
+        if (trimmed.isEmpty() || "/".equals(trimmed)) {
+            return "";
+        }
+        if (trimmed.startsWith("/")) {
+            return trimmed.substring(1);
+        }
+        return trimmed;
     }
 
     /**

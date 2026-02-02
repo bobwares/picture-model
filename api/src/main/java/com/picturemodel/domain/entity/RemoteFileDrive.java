@@ -2,16 +2,17 @@
  * App: Picture Model
  * Package: com.picturemodel.domain.entity
  * File: RemoteFileDrive.java
- * Version: 0.1.0
+ * Version: 0.1.1
  * Turns: 5
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-30T02:03:52Z
+ * Date: 2026-01-30T22:47:34Z
  * Exports: RemoteFileDrive
  * Description: class RemoteFileDrive for RemoteFileDrive responsibilities. Methods: onCreate - on create; onUpdate - on update.
  */
 
 package com.picturemodel.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.picturemodel.domain.enums.ConnectionStatus;
 import com.picturemodel.domain.enums.DriveType;
 import jakarta.persistence.*;
@@ -91,10 +92,12 @@ public class RemoteFileDrive {
 
     @OneToMany(mappedBy = "drive", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @JsonIgnore
     private List<Image> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "drive", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @JsonIgnore
     private List<CrawlJob> crawlJobs = new ArrayList<>();
 
     @PrePersist

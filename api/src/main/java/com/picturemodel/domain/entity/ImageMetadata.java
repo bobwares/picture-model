@@ -2,16 +2,17 @@
  * App: Picture Model
  * Package: com.picturemodel.domain.entity
  * File: ImageMetadata.java
- * Version: 0.1.0
+ * Version: 0.1.1
  * Turns: 5
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-30T02:03:52Z
+ * Date: 2026-01-30T23:03:56Z
  * Exports: ImageMetadata
  * Description: class ImageMetadata for ImageMetadata responsibilities. Methods: onSave - on save.
  */
 
 package com.picturemodel.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.picturemodel.domain.enums.MetadataSource;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -44,6 +45,7 @@ public class ImageMetadata {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "image_id", nullable = false)
+    @JsonIgnore
     private Image image;
 
     @Column(name = "metadataKey", nullable = false, length = 255)

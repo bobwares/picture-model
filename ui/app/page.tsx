@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: ui/app
  * File: page.tsx
- * Version: 0.1.2
- * Turns: 1,5
+ * Version: 0.1.4
+ * Turns: 1,5,10,17
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-30T08:34:12Z
+ * Date: 2026-02-01T17:13:10Z
  * Exports: DashboardPage
  * Description: Dashboard landing page for drives, stats, and recent activity.
  */
@@ -13,13 +13,11 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { driveApi, systemApi } from '@/lib/api-client';
+import { driveApi } from '@/lib/api-client';
 import { DriveCard } from '@/components/drive-card';
-import { StatsCard } from '@/components/stats-card';
-import { RecentActivity } from '@/components/recent-activity';
 import { Header } from '@/components/header';
 import { AddDriveModal } from '@/components/add-drive-modal';
-import { HardDrive, Image as ImageIcon, Tag as TagIcon, Activity } from 'lucide-react';
+import { HardDrive } from 'lucide-react';
 
 export default function DashboardPage() {
   const [isAddDriveModalOpen, setIsAddDriveModalOpen] = useState(false);
@@ -27,14 +25,6 @@ export default function DashboardPage() {
     queryKey: ['drives'],
     queryFn: async () => {
       const response = await driveApi.getAll();
-      return response.data;
-    },
-  });
-
-  const { data: systemStatus } = useQuery({
-    queryKey: ['system-status'],
-    queryFn: async () => {
-      const response = await systemApi.getStatus();
       return response.data;
     },
   });
@@ -65,29 +55,6 @@ export default function DashboardPage() {
               + Add New Drive
             </button>
           </div>
-        </section>
-
-        <section className="grid grid-cols-4 gap-4">
-          <StatsCard
-            title="Total Images"
-            value={systemStatus?.totalImages?.toLocaleString() || '0'}
-            icon={<ImageIcon className="h-5 w-5" />}
-          />
-          <StatsCard
-            title="Total Drives"
-            value={systemStatus?.totalDrives || 0}
-            icon={<HardDrive className="h-5 w-5" />}
-          />
-          <StatsCard
-            title="Total Tags"
-            value={systemStatus?.totalTags || 0}
-            icon={<TagIcon className="h-5 w-5" />}
-          />
-          <StatsCard
-            title="Active Crawls"
-            value={systemStatus?.activeCrawls || 0}
-            icon={<Activity className="h-5 w-5" />}
-          />
         </section>
 
         <section className="flex flex-col gap-4">
@@ -130,7 +97,6 @@ export default function DashboardPage() {
           )}
         </section>
 
-        <RecentActivity />
       </main>
 
       <AddDriveModal

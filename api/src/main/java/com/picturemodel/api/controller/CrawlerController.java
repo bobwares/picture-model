@@ -2,18 +2,21 @@
  * App: Picture Model
  * Package: com.picturemodel.api.controller
  * File: CrawlerController.java
- * Version: 0.1.0
- * Turns: 5
+ * Version: 0.1.3
+ * Turns: 5,17,24
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-30T02:03:52Z
+ * Date: 2026-02-02T02:17:16Z
  * Exports: CrawlerController
- * Description: class CrawlerController for CrawlerController responsibilities. Methods: getJob - get job; startCrawl - start crawl; cancelJob - cancel job.
+ * Description: class CrawlerController for CrawlerController responsibilities. Methods: getAllJobs - get all jobs; getDriveJobs - get drive jobs; getJob - get job; startCrawl - start crawl; cancelJob - cancel job; clearDriveJobs - clear drive jobs.
  */
 
 package com.picturemodel.api.controller;
 
+import com.picturemodel.api.dto.request.StartCrawlRequest;
 import com.picturemodel.domain.entity.CrawlJob;
 import com.picturemodel.domain.repository.CrawlJobRepository;
+import com.picturemodel.service.CrawlerService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,6 +41,7 @@ import java.util.UUID;
 public class CrawlerController {
 
     private final CrawlJobRepository crawlJobRepository;
+    private final CrawlerService crawlerService;
 
     /**
      * Get all crawl jobs with pagination.
@@ -51,6 +55,30 @@ public class CrawlerController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("startTime").descending());
         Page<CrawlJob> jobsPage = crawlJobRepository.findAll(pageable);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", jobsPage.getContent());
+        response.put("totalElements", jobsPage.getTotalElements());
+        response.put("totalPages", jobsPage.getTotalPages());
+        response.put("currentPage", jobsPage.getNumber());
+        response.put("size", jobsPage.getSize());
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Get crawl jobs for a specific drive with pagination.
+     * GET /api/crawler/drives/{driveId}/jobs
+     */
+    @GetMapping("/drives/{driveId}/jobs")
+    public ResponseEntity<Map<String, Object>> getDriveJobs(
+            @PathVariable UUID driveId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        log.debug("Getting crawl jobs for drive {} - page: {}, size: {}", driveId, page, size);
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<CrawlJob> jobsPage = crawlJobRepository.findByDrive_IdOrderByStartTimeDesc(driveId, pageable);
 
         Map<String, Object> response = new HashMap<>();
         response.put("content", jobsPage.getContent());
@@ -80,16 +108,11 @@ public class CrawlerController {
      * POST /api/crawler/start
      */
     @PostMapping("/start")
-    public ResponseEntity<Map<String, String>> startCrawl(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<CrawlJob> startCrawl(@Valid @RequestBody StartCrawlRequest request) {
         log.info("Starting crawl job with request: {}", request);
 
-        // TODO: Implement actual crawl job starting logic
-        // For now, return a placeholder response
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Crawl job start endpoint - implementation pending");
-        response.put("status", "NOT_IMPLEMENTED");
-
-        return ResponseEntity.accepted().body(response);
+        CrawlJob job = crawlerService.startCrawl(request);
+        return ResponseEntity.accepted().body(job);
     }
 
     /**
@@ -97,14 +120,22 @@ public class CrawlerController {
      * POST /api/crawler/jobs/{id}/cancel
      */
     @PostMapping("/jobs/{id}/cancel")
-    public ResponseEntity<Map<String, String>> cancelJob(@PathVariable UUID id) {
+    public ResponseEntity<CrawlJob> cancelJob(@PathVariable UUID id) {
         log.info("Cancelling crawl job: {}", id);
 
-        // TODO: Implement actual crawl job cancellation logic
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Crawl job cancellation - implementation pending");
-        response.put("status", "NOT_IMPLEMENTED");
+        CrawlJob job = crawlerService.cancelJob(id);
+        return ResponseEntity.ok(job);
+    }
 
-        return ResponseEntity.accepted().body(response);
+    /**
+     * Clear crawl job history for a drive.
+     * DELETE /api/crawler/drives/{driveId}/jobs
+     */
+    @DeleteMapping("/drives/{driveId}/jobs")
+    public ResponseEntity<Void> clearDriveJobs(@PathVariable UUID driveId) {
+        log.info("Clearing crawl jobs for drive: {}", driveId);
+
+        crawlerService.clearDriveHistory(driveId);
+        return ResponseEntity.noContent().build();
     }
 }

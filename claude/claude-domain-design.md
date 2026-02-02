@@ -288,7 +288,7 @@ The Picture Model App is an image management system that connects to multiple re
 **Directory Tree:**
 - `GET /api/drives/{id}/tree` - Get directory tree structure
 - `GET /api/drives/{id}/tree?path=/some/path` - Get subtree
-- `GET /api/drives/{id}/images?path=/path` - Get images in directory
+- `GET /api/drives/{id}/images?path=/path&sort=name,asc` - Get images in directory (sort supports date|name|size with optional direction)
 
 **Image Management:**
 - `GET /api/images` - List images (with filters: driveId, path, tags, etc.)

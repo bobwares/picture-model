@@ -85,27 +85,194 @@ mvn spring-boot:run \
 
 ## Database Schema
 
-Tables are automatically created by Hibernate on first run. The schema includes:
+Tables are automatically created by Hibernate on first run. The canonical DDL is in
+`db/schema.sql`. The sections below detail every table, column, constraint, and index.
 
-### Core Tables
+---
 
-1. **remote_file_drives** - Storage locations (LOCAL, SMB, SFTP, FTP)
-   - Indexes: status, name
+### Entity Relationships
 
-2. **images** - Indexed image files
-   - Indexes: (drive_id, file_path) unique, file_hash, file_name, indexed_date, deleted
+```
+remote_file_drives
+    ├── 1:N  images          (images.drive_id → remote_file_drives.id)
+    └── 1:N  crawl_jobs      (crawl_jobs.drive_id → remote_file_drives.id)
 
-3. **image_metadata** - Key-value metadata for images
-   - Indexes: image_id, metadata_key
+images
+    ├── 1:N  image_metadata  (image_metadata.image_id → images.id)
+    └── N:M  tags            (via image_tags join table)
+```
 
-4. **tags** - Organizational tags
-   - Indexes: name unique, usage_count
+- Deleting a drive is **blocked** if it has images or crawl jobs (ON DELETE RESTRICT).
+- Deleting an image **cascades** to its metadata rows and its `image_tags` rows.
+- Deleting a tag **cascades** its `image_tags` rows.
 
-5. **image_tags** - Many-to-many join table
-   - Indexes: image_id, tag_id
+---
 
-6. **crawl_jobs** - File system crawl tracking
-   - Indexes: drive_id, status, start_time
+### remote_file_drives
+
+Represents a configured storage location. The `connectionUrl` identifies the server or
+path; `rootPath` scopes the crawl and file reads to a subdirectory within that location.
+Credentials for network drives are stored encrypted in `encryptedCredentials` (JSON,
+encrypted at rest via Jasypt).
+
+| Column                 | Type        | Nullable | Default        | Notes |
+|------------------------|-------------|----------|----------------|-------|
+| id                     | uuid        | NO       | (generated)    | Primary key |
+| name                   | varchar(200)| NO       |                | Display name |
+| type                   | varchar(20) | NO       |                | Enum: `LOCAL`, `SMB`, `SFTP`, `FTP` |
+| connectionurl          | varchar(1000)| NO      |                | Server address or local path |
+| encryptedcredentials   | text        | YES      |                | Encrypted JSON: username, password, port |
+| status                 | varchar(20) | NO       | `DISCONNECTED` | Enum: `DISCONNECTED`, `CONNECTING`, `CONNECTED`, `ERROR` |
+| rootpath               | varchar(1000)| NO      |                | Starting directory for crawl and file reads |
+| autoconnect            | boolean     | NO       | `false`        | Connect on application startup |
+| autocrawl              | boolean     | NO       | `false`        | Start crawl immediately after connect |
+| lastconnected          | timestamp   | YES      |                | Last successful connection time |
+| lastcrawled            | timestamp   | YES      |                | Last completed crawl end time |
+| imagecount             | integer     | NO       | `0`            | Cached count of non-deleted images |
+| createddate            | timestamp   | NO       |                | Set on insert |
+| modifieddate           | timestamp   | NO       |                | Updated on every save |
+
+**Indexes:**
+
+| Index name        | Columns | Unique |
+|-------------------|---------|--------|
+| idx_drive_status  | status  | No     |
+| idx_drive_name    | name    | No     |
+
+---
+
+### images
+
+One row per image file discovered by the crawler. `filePath` is relative to the drive's
+`rootPath`. The `deleted` flag is a soft delete — the row is retained so that incremental
+crawls can detect re-added files.
+
+| Column         | Type          | Nullable | Notes |
+|----------------|---------------|----------|-------|
+| id             | uuid          | NO       | Primary key |
+| drive_id       | uuid          | NO       | FK → remote_file_drives.id |
+| filename       | varchar(500)  | NO       | Base file name |
+| filepath       | varchar(2000) | NO       | Relative path from drive rootPath |
+| filesize       | bigint        | NO       | Size in bytes |
+| filehash       | varchar(64)   | NO       | SHA-256 hex digest |
+| mimetype       | varchar(100)  | NO       | e.g. `image/jpeg` |
+| width          | integer       | YES      | Pixel width (not yet populated) |
+| height         | integer       | YES      | Pixel height (not yet populated) |
+| thumbnailpath  | varchar(500)  | YES      | Reserved; thumbnails are generated on the fly |
+| deleted        | boolean       | NO       | Soft delete flag |
+| capturedat     | timestamp     | YES      | EXIF capture time (not yet populated) |
+| createddate    | timestamp     | NO       | File creation/modification time from the drive |
+| modifieddate   | timestamp     | NO       | File modification time from the drive |
+| indexeddate    | timestamp     | NO       | When the crawler wrote this row |
+
+**Indexes:**
+
+| Index name                | Columns              | Unique |
+|---------------------------|----------------------|--------|
+| idx_image_drive_path      | drive_id, filepath   | Yes    |
+| idx_image_file_hash       | filehash             | No     |
+| idx_image_file_name       | filename             | No     |
+| idx_image_indexed_date    | indexeddate          | No     |
+| idx_image_deleted         | deleted              | No     |
+
+---
+
+### image_metadata
+
+Flexible key-value store attached to an image. Keys are normalized to lowercase on
+save. The `source` column tracks where the value came from so user edits and
+auto-extracted values can coexist under the same key.
+
+| Column        | Type         | Nullable | Notes |
+|---------------|--------------|----------|-------|
+| id            | uuid         | NO       | Primary key |
+| image_id      | uuid         | NO       | FK → images.id (CASCADE on delete) |
+| metadatakey   | varchar(255) | NO       | Normalized to lowercase |
+| value_entry   | text         | YES      | The metadata value |
+| source        | varchar(20)  | NO       | Enum: `EXIF`, `USER_ENTERED`, `AUTO_GENERATED` |
+| lastmodified  | timestamp    | NO       | Updated on every save |
+
+**Indexes:**
+
+| Index name            | Columns       | Unique |
+|-----------------------|---------------|--------|
+| idx_metadata_image_id | image_id      | No     |
+| idx_metadata_key      | metadatakey   | No     |
+
+---
+
+### tags
+
+User-defined labels for organizing images. `usageCount` is maintained by the
+application when tags are added to or removed from images.
+
+| Column      | Type         | Nullable | Default | Notes |
+|-------------|--------------|----------|---------|-------|
+| id          | uuid         | NO       |         | Primary key |
+| name        | varchar(100) | NO       |         | Unique across all tags |
+| color       | varchar(7)   | YES      |         | Hex color code, e.g. `#FF5733` |
+| usagecount  | integer      | NO       | `0`     | Number of images currently tagged |
+| createddate | timestamp    | NO       |         | Set on insert |
+
+**Indexes:**
+
+| Index name            | Columns    | Unique |
+|-----------------------|------------|--------|
+| idx_tag_name          | name       | Yes    |
+| idx_tag_usage_count   | usagecount | No     |
+
+---
+
+### image_tags
+
+Join table for the many-to-many relationship between images and tags. Both foreign
+keys cascade on delete.
+
+| Column   | Type | Nullable | Notes |
+|----------|------|----------|-------|
+| image_id | uuid | NO       | FK → images.id (CASCADE on delete) |
+| tag_id   | uuid | NO       | FK → tags.id (CASCADE on delete) |
+
+**Primary key:** composite (image_id, tag_id)
+
+**Indexes:**
+
+| Index name              | Columns  | Unique |
+|-------------------------|----------|--------|
+| idx_image_tags_image    | image_id | No     |
+| idx_image_tags_tag      | tag_id   | No     |
+
+---
+
+### crawl_jobs
+
+Tracks each crawl operation against a drive. The `errors` column stores a JSON array
+of error message strings collected during the run. An incremental crawl skips files
+whose `lastModified` is on or before the drive's `lastCrawled` timestamp.
+
+| Column             | Type          | Nullable | Default        | Notes |
+|--------------------|---------------|----------|----------------|-------|
+| id                 | uuid          | NO       | (generated)    | Primary key |
+| drive_id           | uuid          | NO       |                | FK → remote_file_drives.id |
+| rootpath           | varchar(2000) | NO       |                | Path the crawl started from |
+| status             | varchar(20)   | NO       | `PENDING`      | Enum: `PENDING`, `IN_PROGRESS`, `PAUSED`, `COMPLETED`, `FAILED`, `CANCELLED` |
+| starttime          | timestamp     | NO       |                | Set on insert if not provided |
+| endtime            | timestamp     | YES      |                | Set on completion, failure, or cancellation |
+| filesprocessed     | integer       | NO       | `0`            | Total files examined |
+| filesadded         | integer       | NO       | `0`            | New image rows created |
+| filesupdated       | integer       | NO       | `0`            | Existing rows updated (size/hash changed) |
+| filesdeleted       | integer       | NO       | `0`            | Rows soft-deleted (not found on drive) |
+| currentpathvalue   | varchar(2000) | YES      |                | Last directory visited; updated during the run |
+| isincremental      | boolean       | NO       | `false`        | If true, only processes files newer than lastCrawled |
+| errors             | text          | YES      |                | JSON array of error strings |
+
+**Indexes:**
+
+| Index name              | Columns   | Unique |
+|-------------------------|-----------|--------|
+| idx_crawl_drive_id      | drive_id  | No     |
+| idx_crawl_status        | status    | No     |
+| idx_crawl_start_time    | starttime | No     |
 
 ## Viewing the Database
 

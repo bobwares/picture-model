@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://picturemodel.com/schemas/api-request-drive-images-query.json",
+  "title": "DriveImagesQuery",
+  "description": "Query parameters for listing images within a drive path",
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Filter by directory path (optional)"
+    },
+    "page": {
+      "type": "integer",
+      "description": "Page number (0-based)",
+      "minimum": 0,
+      "default": 0
+    },
+    "size": {
+      "type": "integer",
+      "description": "Number of results per page",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 24
+    },
+    "sort": {
+      "type": "string",
+      "description": "Sort field and direction (field is date|name|size; direction is asc|desc)",
+      "pattern": "^(date|name|size)(,(asc|desc))?$",
+      "default": "date,desc"
+    }
+  },
+  "additionalProperties": false
+}

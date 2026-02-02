@@ -2,16 +2,17 @@
  * App: Picture Model
  * Package: com.picturemodel.domain.entity
  * File: Image.java
- * Version: 0.1.0
+ * Version: 0.1.2
  * Turns: 5
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-30T02:03:52Z
+ * Date: 2026-01-30T23:08:17Z
  * Exports: Image
  * Description: class Image for Image responsibilities. Methods: onCreate - on create; getFullPath - get full path.
  */
 
 package com.picturemodel.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,6 +51,7 @@ public class Image {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "drive_id", nullable = false)
+    @JsonIgnore
     private RemoteFileDrive drive;
 
     @Column(nullable = false, length = 500)
@@ -120,5 +122,37 @@ public class Image {
             return drive.getRootPath() + (drive.getRootPath().endsWith("/") ? "" : "/") + filePath;
         }
         return filePath;
+    }
+
+    /**
+     * Expose drive ID without serializing the full drive entity.
+     */
+    @Transient
+    public UUID getDriveId() {
+        return drive != null ? drive.getId() : null;
+    }
+
+    /**
+     * Expose drive name without serializing the full drive entity.
+     */
+    @Transient
+    public String getDriveName() {
+        return drive != null ? drive.getName() : null;
+    }
+
+    /**
+     * Build image URL for API file serving.
+     */
+    @Transient
+    public String getImageUrl() {
+        return id != null ? "/api/files/" + id : null;
+    }
+
+    /**
+     * Build thumbnail URL for API file serving.
+     */
+    @Transient
+    public String getThumbnailUrl() {
+        return id != null ? "/api/files/" + id + "/thumbnail?size=medium" : null;
     }
 }

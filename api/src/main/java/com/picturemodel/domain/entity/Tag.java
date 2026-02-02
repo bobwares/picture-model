@@ -2,16 +2,17 @@
  * App: Picture Model
  * Package: com.picturemodel.domain.entity
  * File: Tag.java
- * Version: 0.1.0
+ * Version: 0.1.1
  * Turns: 5
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-30T02:03:52Z
+ * Date: 2026-01-30T23:03:56Z
  * Exports: Tag
  * Description: class Tag for Tag responsibilities. Methods: onCreate - on create.
  */
 
 package com.picturemodel.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -58,6 +59,7 @@ public class Tag {
 
     @ManyToMany(mappedBy = "tags")
     @Builder.Default
+    @JsonIgnore
     private Set<Image> images = new HashSet<>();
 
     @PrePersist

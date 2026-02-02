@@ -733,7 +733,7 @@ Large:       > 1440px  → Spacious layout, 6-8 columns
 **Directory Tree:**
 - `GET /api/drives/{id}/tree` - Get full directory tree
 - `GET /api/drives/{id}/tree?path=/some/path` - Get subtree
-- `GET /api/drives/{id}/images?path=/some/path` - Get images in path
+- `GET /api/drives/{id}/images?path=/some/path&sort=date,desc` - Get images in path (sort supports date|name|size with optional direction)
 
 **Cross-Drive Operations:**
 - `GET /api/images?driveId={id}` - Filter images by drive

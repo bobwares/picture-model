@@ -1535,6 +1535,7 @@ public class DriveController {
         @RequestParam String path,
         Pageable pageable
     ) {
+        // sort supports "date|name|size" with optional direction (e.g., sort=name,asc)
         return ResponseEntity.ok(driveService.getImagesInDirectory(id, path, pageable));
     }
 }
@@ -1554,7 +1555,7 @@ POST   /api/drives/{id}/disconnect              Disconnect from drive
 GET    /api/drives/{id}/status                  Get connection status
 POST   /api/drives/{id}/test                    Test connection
 GET    /api/drives/{id}/tree                    Get directory tree
-GET    /api/drives/{id}/images                  Get images in directory
+GET    /api/drives/{id}/images                  Get images in directory (query: path, page, size, sort=field,dir)
 
 # Images
 GET    /api/images                              Search/list images

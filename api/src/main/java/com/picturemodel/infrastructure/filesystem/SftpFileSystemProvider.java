@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: com.picturemodel.infrastructure.filesystem
  * File: SftpFileSystemProvider.java
- * Version: 0.1.0
- * Turns: 5
+ * Version: 0.1.1
+ * Turns: 5,9
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-30T02:03:52Z
+ * Date: 2026-01-31T21:59:02Z
  * Exports: SftpFileSystemProvider
  * Description: class SftpFileSystemProvider for SftpFileSystemProvider responsibilities. Methods: SftpFileSystemProvider - constructor; connect - connect; disconnect - disconnect; isConnected - is connected; listDirectory - list directory; getDirectoryTree - get directory tree; buildDirectoryTree - build directory tree; readFile - read file; getFileMetadata - get file metadata; fileExists - file exists; testConnection - test connection; createFileInfo - create file info; normalizePath - normalize path; isImageFile - is image file; guessContentType - guess content type.
  */
@@ -236,6 +236,8 @@ public class SftpFileSystemProvider implements FileSystemProvider {
         if (lower.endsWith(".bmp")) return "image/bmp";
         if (lower.endsWith(".webp")) return "image/webp";
         if (lower.endsWith(".tiff") || lower.endsWith(".tif")) return "image/tiff";
+        if (lower.endsWith(".heic")) return "image/heic";
+        if (lower.endsWith(".heif")) return "image/heif";
         return null;
     }
 }

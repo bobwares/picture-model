@@ -2,12 +2,12 @@
  * App: Picture Model
  * Package: com.picturemodel.domain.repository
  * File: CrawlJobRepository.java
- * Version: 0.1.0
- * Turns: 5
+ * Version: 0.1.2
+ * Turns: 5,17
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-30T02:03:52Z
+ * Date: 2026-02-01T17:12:25Z
  * Exports: CrawlJobRepository
- * Description: interface CrawlJobRepository for CrawlJobRepository responsibilities. Methods: findByDriveIdOrderByStartTimeDesc - find by drive id order by start time desc; findByStatus - find by status; countByStatus - count by status.
+ * Description: interface CrawlJobRepository for CrawlJobRepository responsibilities. Methods: findByDrive_IdOrderByStartTimeDesc - find by drive id order by start time desc; findByStatus - find by status; countByStatus - count by status.
  */
 
 package com.picturemodel.domain.repository;
@@ -33,7 +33,7 @@ public interface CrawlJobRepository extends JpaRepository<CrawlJob, UUID> {
     /**
      * Find crawl jobs for a specific drive, ordered by start time (most recent first).
      */
-    Page<CrawlJob> findByDriveIdOrderByStartTimeDesc(UUID driveId, Pageable pageable);
+    Page<CrawlJob> findByDrive_IdOrderByStartTimeDesc(UUID driveId, Pageable pageable);
 
     /**
      * Find all crawl jobs with a specific status.
@@ -44,4 +44,9 @@ public interface CrawlJobRepository extends JpaRepository<CrawlJob, UUID> {
      * Count crawl jobs with a specific status.
      */
     long countByStatus(CrawlStatus status);
+
+    /**
+     * Delete all crawl jobs for a specific drive.
+     */
+    void deleteByDrive_Id(UUID driveId);
 }

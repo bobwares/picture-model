@@ -2,10 +2,10 @@
 #  * App: Picture Model
 #  * Package: e2e
 #  * File: crawler-start.http
-#  * Version: 0.1.0
-#  * Turns: 1
-#  * Author: codex
-#  * Date: 2026-01-29T22:54:22Z
+#  * Version: 0.1.1
+#  * Turns: 1,5
+#  * Author: Bobwares (bobwares@outlook.com)
+#  * Date: 2026-01-30T22:38:02Z
 #  * Exports: N/A
 #  * Description: Start a crawl job.
 #  */
@@ -16,7 +16,7 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "drive_id": "00000000-0000-0000-0000-000000000000",
-  "root_path": "/",
-  "is_incremental": true
+  "driveId": "51e11806-7000-4a1d-b4ee-52581fe1d683",
+  "rootPath": "",
+  "isIncremental": false
 }

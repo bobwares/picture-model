@@ -2,10 +2,10 @@
 #  * App: Picture Model
 #  * Package: api/src/main/resources
 #  * File: application.yml
-#  * Version: 0.1.1
-#  * Turns: 4
+#  * Version: 0.1.2
+#  * Turns: 4,9
 #  * Author: codex
-#  * Date: 2026-01-29T23:21:33Z
+#  * Date: 2026-01-31T21:59:02Z
 #  * Exports: N/A
 #  * Description: Base application configuration for the Picture Model API.
 #  */
@@ -80,6 +80,8 @@ picture-model:
       - image/webp
       - image/tiff
       - image/bmp
+      - image/heic
+      - image/heif
     thread-pool-size: 4
     batch-size: 100
     progress-update-interval: 10

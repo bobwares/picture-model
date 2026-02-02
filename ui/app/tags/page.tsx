@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: ui/app/tags
  * File: page.tsx
- * Version: 0.1.0
- * Turns: 4
+ * Version: 0.1.2
+ * Turns: 4,9,10
  * Author: Claude
- * Date: 2026-01-29
+ * Date: 2026-01-31T22:03:03Z
  * Exports: TagsPage
  * Description: Tags view with tag filtering and image grid across all drives
  */
@@ -128,6 +128,12 @@ export default function TagsPage() {
   const handleImageClick = (imageId: string) => {
     const image = images.find((img) => img.id === imageId);
     if (image) {
+      if (typeof window !== 'undefined') {
+        const ids = images
+          .filter((img) => img.driveId === image.driveId)
+          .map((img) => img.id);
+        window.sessionStorage.setItem(`image-nav:${image.driveId}`, JSON.stringify({ ids }));
+      }
       router.push(`/image/${image.driveId}/${imageId}`);
     }
   };
@@ -326,6 +332,7 @@ export default function TagsPage() {
               selectedImageIds={selectedImageIds}
               onImageSelect={handleImageSelect}
               onImageClick={handleImageClick}
+              resetKey={`${Array.from(selectedTagIds).join(',')}-${sortBy}`}
               size="medium"
               emptyMessage={
                 selectedTagIds.size === 0

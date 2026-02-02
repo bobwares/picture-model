@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: com.picturemodel.api.exception
  * File: GlobalExceptionHandler.java
- * Version: 0.1.0
+ * Version: 0.1.1
  * Turns: 5
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-30T02:03:52Z
+ * Date: 2026-01-31T02:19:37Z
  * Exports: GlobalExceptionHandler
  * Description: class GlobalExceptionHandler for GlobalExceptionHandler responsibilities. Methods: handleValidationException - handle validation exception; handleIllegalArgumentException - handle illegal argument exception; handleRuntimeException - handle runtime exception; handleGenericException - handle generic exception; formatFieldError - format field error.
  */
@@ -20,6 +20,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.stream.Collectors;
 
@@ -77,6 +78,17 @@ public class GlobalExceptionHandler {
 
         ErrorDto error = ErrorDto.of("server_error", "An unexpected error occurred", ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    /**
+     * Handle missing static or unmapped resources.
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorDto> handleNoResourceFound(NoResourceFoundException ex) {
+        log.warn("Resource not found: {}", ex.getResourcePath());
+
+        ErrorDto error = ErrorDto.of("not_found", "Resource not found", ex.getResourcePath());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
     /**

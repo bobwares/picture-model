@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: ui/components
  * File: add-drive-modal.tsx
- * Version: 0.1.0
- * Turns: 1
- * Author: Codex
- * Date: 2026-01-29T22:11:12Z
+ * Version: 0.1.2
+ * Turns: 1,5
+ * Author: Bobwares (bobwares@outlook.com)
+ * Date: 2026-01-30T22:04:04Z
  * Exports: AddDriveModal
  * Description: Modal form for creating a new remote drive.
  */
@@ -18,9 +18,9 @@ import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { driveApi } from '@/lib/api-client';
 import { X } from 'lucide-react';
-import type { DriveType } from '@/types';
+import type { CreateDriveRequest, DriveType } from '@/types';
 
-const createDriveSchema = z.object({
+const driveFormSchema = z.object({
   name: z.string().min(1, 'Drive name is required').max(200, 'Name too long'),
   type: z.enum(['LOCAL', 'SMB', 'SFTP', 'FTP']),
   connectionUrl: z.string().min(1, 'Connection URL is required').max(500, 'URL too long'),
@@ -30,7 +30,7 @@ const createDriveSchema = z.object({
   credentials: z.string().optional(),
 });
 
-type CreateDriveForm = z.infer<typeof createDriveSchema>;
+type DriveForm = z.infer<typeof driveFormSchema>;
 
 interface AddDriveModalProps {
   isOpen: boolean;
@@ -47,8 +47,8 @@ export function AddDriveModal({ isOpen, onClose }: AddDriveModalProps) {
     formState: { errors },
     reset,
     watch,
-  } = useForm<CreateDriveForm>({
-    resolver: zodResolver(createDriveSchema),
+  } = useForm<DriveForm>({
+    resolver: zodResolver(driveFormSchema),
     defaultValues: {
       rootPath: '/',
       autoConnect: false,
@@ -59,7 +59,7 @@ export function AddDriveModal({ isOpen, onClose }: AddDriveModalProps) {
   const driveType = watch('type');
 
   const createMutation = useMutation({
-    mutationFn: async (data: CreateDriveForm) => {
+    mutationFn: async (data: CreateDriveRequest) => {
       const response = await driveApi.create(data);
       return response.data;
     },
@@ -74,9 +74,30 @@ export function AddDriveModal({ isOpen, onClose }: AddDriveModalProps) {
     },
   });
 
-  const onSubmit = (data: CreateDriveForm) => {
+  const onSubmit = (data: DriveForm) => {
     setError(null);
-    createMutation.mutate(data);
+    let credentials: CreateDriveRequest['credentials'];
+    if (data.credentials) {
+      try {
+        JSON.parse(data.credentials);
+        credentials = data.credentials;
+      } catch (err) {
+        setError('Credentials must be valid JSON');
+        return;
+      }
+    }
+
+    const payload: CreateDriveRequest = {
+      name: data.name,
+      type: data.type,
+      connectionUrl: data.connectionUrl,
+      rootPath: data.rootPath,
+      autoConnect: data.autoConnect,
+      autoCrawl: data.autoCrawl,
+      credentials,
+    };
+
+    createMutation.mutate(payload);
   };
 
   if (!isOpen) return null;

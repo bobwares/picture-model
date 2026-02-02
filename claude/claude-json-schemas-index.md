@@ -36,10 +36,11 @@ Schemas are organized with descriptive prefixes:
 │   ├── common-enum-drive-type.json
 │   └── common-enum-metadata-source.json
 │
-├── API Requests (8 schemas)
+├── API Requests (9 schemas)
 │   ├── api-request-add-tags.json
 │   ├── api-request-create-drive.json
 │   ├── api-request-create-tag.json
+│   ├── api-request-drive-images-query.json
 │   ├── api-request-search-query.json
 │   ├── api-request-start-crawl.json
 │   ├── api-request-update-drive.json
@@ -64,7 +65,7 @@ Schemas are organized with descriptive prefixes:
     └── ws-event-crawl-progress.json
 ```
 
-**Total:** 25 JSON Schema files
+**Total:** 26 JSON Schema files
 
 ---
 
@@ -118,6 +119,11 @@ Schemas are organized with descriptive prefixes:
 **Endpoint:** `PUT /api/tags/{id}`
 **Purpose:** Update existing tag
 **Optional:** `name`, `color`
+
+#### api-request-drive-images-query.json
+**Endpoint:** `GET /api/drives/{id}/images` (query parameters)
+**Purpose:** List images in a drive path with pagination and sorting
+**Optional Fields:** `path`, `page`, `size`, `sort` (format: `field,dir`)
 
 #### api-request-add-tags.json
 **Endpoint:** `POST /api/images/{id}/tags`
@@ -285,7 +291,7 @@ stompClient.connect({}, () => {
 | GET | `/api/drives/{id}/status` | - | api-response-drive-status |
 | POST | `/api/drives/{id}/test` | - | api-response-connection-test-result |
 | GET | `/api/drives/{id}/tree` | Query: `path` | api-response-directory-tree |
-| GET | `/api/drives/{id}/images` | Query: `path`, pagination | api-response-search-result |
+| GET | `/api/drives/{id}/images` | Query: api-request-drive-images-query | api-response-search-result |
 
 ### Image Management
 
