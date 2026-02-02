@@ -1,0 +1,98 @@
+{
+  "turnId": 11,
+  "tasks": [
+    {
+      "taskId": "create-aip-fullstack-java-nextjs",
+      "agent": "codex",
+      "inputs": [
+        "create an application implementation pattern from this application.  output ./docs/aip/fullstack-java-nextjs"
+      ],
+      "outputs": [
+        {
+          "path": "/Users/bobware/ai-projects/picture-model/docs/aip/fullstack-java-nextjs/README.md",
+          "sha256": "9d790a47ad3413758e0b6dbef54180c384f0e55155a0b0b764b390c89f77e79d"
+        },
+        {
+          "path": "/Users/bobware/ai-projects/picture-model/docs/aip/fullstack-java-nextjs/repo-layout.md",
+          "sha256": "5a0c8fb09576bc76dfd81cfda80629d925a8f64100f49c2ee5c1c19a362e0a9e"
+        },
+        {
+          "path": "/Users/bobware/ai-projects/picture-model/docs/aip/fullstack-java-nextjs/backend.md",
+          "sha256": "fa78efb48242324774d51d1bba0ffd7ab5bb81c49180f86cf24c5c3f95029c5b"
+        },
+        {
+          "path": "/Users/bobware/ai-projects/picture-model/docs/aip/fullstack-java-nextjs/frontend.md",
+          "sha256": "249245d3e962b3e1a1307411a3072e05e7e3bd28fd392db84bda05f0e4c9ac4e"
+        },
+        {
+          "path": "/Users/bobware/ai-projects/picture-model/docs/aip/fullstack-java-nextjs/contract.md",
+          "sha256": "19eece0bd5e5c9cdf9bad915623a1a48df0bdf1144914bae1e37e4c7b6f86ac9"
+        },
+        {
+          "path": "/Users/bobware/ai-projects/picture-model/docs/aip/fullstack-java-nextjs/testing.md",
+          "sha256": "bfeb11ee490e4f0d4015255020241d592d74ef70e41a473fa09476440e44902e"
+        },
+        {
+          "path": "/Users/bobware/ai-projects/picture-model/docs/aip/fullstack-java-nextjs/execution-plan.md",
+          "sha256": "fe2bb4476314529b5e9b511a26774fbd17fe3c8e00e9a17b58799ab5bb1ef002"
+        }
+      ],
+      "validations": [
+        {
+          "rule": "tests",
+          "status": "skipped"
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "promptHash": "59ff6f7f991c047c0029684bad50a7c34a916337593d615f532a756616001e9f",
+    "tools": ["shell_command", "apply_patch"],
+    "startedAt": "2026-02-02T23:08:25Z",
+    "finishedAt": "2026-02-02T23:10:16Z",
+    "activePatternName": "full-stack-nextjs-spring",
+    "activePatternPath": "/Users/bobware/ai-projects/agentic-ai-pipeline/application-implementation-patterns/full-stack-nextjs-spring"
+  },
+  "outputs": [
+    {
+      "path": "/Users/bobware/ai-projects/picture-model/ai/agentic-pipeline/turns/11/session_context.md",
+      "sha256": "7e35f6d110c3650d29fc02eba9a82d8c5032a8d42c3cc73260349dc148001dab"
+    },
+    {
+      "path": "/Users/bobware/ai-projects/picture-model/ai/agentic-pipeline/turns/11/pull_request.md",
+      "sha256": "1523456d05360907a140433d65f7c0b81e5d08abbae561d3b382f94117068a2c"
+    },
+    {
+      "path": "/Users/bobware/ai-projects/picture-model/ai/agentic-pipeline/turns/11/adr.md",
+      "sha256": "62c26702531f5d07e315c8177e047e97c050925c998b4c2eed454170a851c74e"
+    },
+    {
+      "path": "/Users/bobware/ai-projects/picture-model/docs/aip/fullstack-java-nextjs/README.md",
+      "sha256": "9d790a47ad3413758e0b6dbef54180c384f0e55155a0b0b764b390c89f77e79d"
+    },
+    {
+      "path": "/Users/bobware/ai-projects/picture-model/docs/aip/fullstack-java-nextjs/repo-layout.md",
+      "sha256": "5a0c8fb09576bc76dfd81cfda80629d925a8f64100f49c2ee5c1c19a362e0a9e"
+    },
+    {
+      "path": "/Users/bobware/ai-projects/picture-model/docs/aip/fullstack-java-nextjs/backend.md",
+      "sha256": "fa78efb48242324774d51d1bba0ffd7ab5bb81c49180f86cf24c5c3f95029c5b"
+    },
+    {
+      "path": "/Users/bobware/ai-projects/picture-model/docs/aip/fullstack-java-nextjs/frontend.md",
+      "sha256": "249245d3e962b3e1a1307411a3072e05e7e3bd28fd392db84bda05f0e4c9ac4e"
+    },
+    {
+      "path": "/Users/bobware/ai-projects/picture-model/docs/aip/fullstack-java-nextjs/contract.md",
+      "sha256": "19eece0bd5e5c9cdf9bad915623a1a48df0bdf1144914bae1e37e4c7b6f86ac9"
+    },
+    {
+      "path": "/Users/bobware/ai-projects/picture-model/docs/aip/fullstack-java-nextjs/testing.md",
+      "sha256": "bfeb11ee490e4f0d4015255020241d592d74ef70e41a473fa09476440e44902e"
+    },
+    {
+      "path": "/Users/bobware/ai-projects/picture-model/docs/aip/fullstack-java-nextjs/execution-plan.md",
+      "sha256": "fe2bb4476314529b5e9b511a26774fbd17fe3c8e00e9a17b58799ab5bb1ef002"
+    }
+  ]
+}
