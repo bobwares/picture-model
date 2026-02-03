@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: ui/components
  * File: drive-card.tsx
- * Version: 0.1.7
- * Turns: 1,5,8,10,17,23
+ * Version: 0.1.8
+ * Turns: 1,5,8,10,17,23,18
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-02-02T02:13:59Z
+ * Date: 2026-02-03T05:25:48Z
  * Exports: DriveCard
  * Description: Card displaying drive status, metadata, and actions.
  */
@@ -36,7 +36,6 @@ export function DriveCard({ drive }: DriveCardProps) {
     mutationFn: () => driveApi.connect(drive.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drives'] });
-      router.push(`/tree/${drive.id}`);
     },
     onError: (err: any) => {
       window.alert(err.response?.data?.message || 'Failed to connect drive');

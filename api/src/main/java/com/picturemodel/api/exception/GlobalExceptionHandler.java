@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: com.picturemodel.api.exception
  * File: GlobalExceptionHandler.java
- * Version: 0.1.1
- * Turns: 5
+ * Version: 0.1.2
+ * Turns: 5,17
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-31T02:19:37Z
+ * Date: 2026-02-03T05:20:19Z
  * Exports: GlobalExceptionHandler
  * Description: class GlobalExceptionHandler for GlobalExceptionHandler responsibilities. Methods: handleValidationException - handle validation exception; handleIllegalArgumentException - handle illegal argument exception; handleRuntimeException - handle runtime exception; handleGenericException - handle generic exception; formatFieldError - format field error.
  */
@@ -16,6 +16,7 @@ import com.picturemodel.api.dto.response.ErrorDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -31,6 +32,16 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    /**
+     * Handle servlet async request timeouts (Spring MVC adapts reactive return values via async).
+     */
+    @ExceptionHandler(AsyncRequestTimeoutException.class)
+    public Mono<ResponseEntity<ErrorDto>> handleAsyncRequestTimeout(AsyncRequestTimeoutException ex) {
+        log.warn("Async request timeout");
+        ErrorDto error = ErrorDto.of("timeout", "Request timed out");
+        return Mono.just(ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body(error));
+    }
 
     /**
      * Handle validation errors (WebFlux).

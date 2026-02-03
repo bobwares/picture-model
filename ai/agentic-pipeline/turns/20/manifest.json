@@ -1,0 +1,55 @@
+{
+  "turnId": 20,
+  "tasks": [
+    {
+      "taskId": "merge-smb-root-path",
+      "agent": "Codex",
+      "inputs": [
+        "SMB crawl reads failing due to missing rootPath in connection URL",
+        "Request to implement option 2 (merge rootPath into SMB connectionUrl)"
+      ],
+      "outputs": [
+        {
+          "path": "api/src/main/java/com/picturemodel/infrastructure/filesystem/FileSystemProviderFactory.java",
+          "sha256": "ddf1e38da39af5deb15d9510b33e2e97ca12e156737ade179b105cf64ea40660"
+        }
+      ],
+      "validations": [
+        {
+          "rule": "tests",
+          "status": "skipped",
+          "detailsPath": ""
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "promptHash": "unknown",
+    "tools": [
+      "shell_command",
+      "apply_patch"
+    ],
+    "startedAt": "2026-02-03T08:06:50Z",
+    "finishedAt": "2026-02-03T08:07:43Z",
+    "activePatternName": "full-stack-nextjs-spring",
+    "activePatternPath": "/Users/bobware/ai-projects/agentic-ai-pipeline/application-implementation-patterns/full-stack-nextjs-spring"
+  },
+  "outputs": [
+    {
+      "path": "api/src/main/java/com/picturemodel/infrastructure/filesystem/FileSystemProviderFactory.java",
+      "sha256": "ddf1e38da39af5deb15d9510b33e2e97ca12e156737ade179b105cf64ea40660"
+    },
+    {
+      "path": "ai/agentic-pipeline/turns/20/session_context.md",
+      "sha256": "84d4478b3bcfc4594f29f2f1b3f5462284a1f59c2de3e50d1777176ee2b85e26"
+    },
+    {
+      "path": "ai/agentic-pipeline/turns/20/pull_request.md",
+      "sha256": "95788edd08396e02efb938f6e2ef0476ce5a4c69ddfaff08d53a899f6b6cec38"
+    },
+    {
+      "path": "ai/agentic-pipeline/turns/20/adr.md",
+      "sha256": "f83d12b68ee099331e7800a9d9cf0499b83a562eec8ba77a35277a4b3beb5214"
+    }
+  ]
+}

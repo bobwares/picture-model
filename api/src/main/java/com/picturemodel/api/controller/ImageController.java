@@ -2,17 +2,19 @@
  * App: Picture Model
  * Package: com.picturemodel.api.controller
  * File: ImageController.java
- * Version: 0.1.1
- * Turns: 5
+ * Version: 0.1.2
+ * Turns: 5,15
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-30T23:08:17Z
+ * Date: 2026-02-03T04:55:46Z
  * Exports: ImageController
  * Description: REST controller for image search and listing.
- * ImageController - provides search endpoints with optional filters.
+ * ImageController - provides search and detail endpoints with DTO responses to avoid lazy-loading serialization errors.
  */
 
 package com.picturemodel.api.controller;
 
+import com.picturemodel.api.dto.response.ImageDto;
+import com.picturemodel.api.mapper.DtoMapper;
 import com.picturemodel.domain.entity.Image;
 import com.picturemodel.service.ReactiveRepositoryWrapper;
 import jakarta.validation.constraints.Min;
@@ -50,6 +52,7 @@ import java.util.UUID;
 public class ImageController {
 
     private final ReactiveRepositoryWrapper repositoryWrapper;
+    private final DtoMapper dtoMapper;
 
     /**
      * Search/list images with optional filters.
@@ -73,7 +76,9 @@ public class ImageController {
         return repositoryWrapper.findImagesBySpecification(spec, pageable)
                 .map(imagesPage -> {
                     Map<String, Object> response = new HashMap<>();
-                    response.put("content", imagesPage.getContent());
+                    response.put("content", imagesPage.getContent().stream()
+                            .map(dtoMapper::toImageSummaryDto)
+                            .toList());
                     response.put("totalElements", imagesPage.getTotalElements());
                     response.put("totalPages", imagesPage.getTotalPages());
                     response.put("currentPage", imagesPage.getNumber());
@@ -87,8 +92,9 @@ public class ImageController {
      * GET /api/images/{id}
      */
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<Image>> getImage(@PathVariable UUID id) {
-        return repositoryWrapper.findImageById(id)
+    public Mono<ResponseEntity<ImageDto>> getImage(@PathVariable UUID id) {
+        return repositoryWrapper.findImageDetailById(id)
+                .map(dtoMapper::toImageDetailDto)
                 .map(ResponseEntity::ok)
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }

@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: com.picturemodel.domain.repository
  * File: ImageRepository.java
- * Version: 0.1.3
- * Turns: 5
+ * Version: 0.1.4
+ * Turns: 5,15
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-31T07:44:19Z
+ * Date: 2026-02-03T04:55:06Z
  * Exports: ImageRepository
  * Description: interface ImageRepository for ImageRepository responsibilities. Methods: findByDrive_IdAndFilePath - find by drive id and file path; findByFileHash - find by file hash; findByDrive_Id - find by drive id; findAllByDrive_Id - find all by drive id; countByDrive_Id - count by drive id; countByDrive_IdAndDeletedFalse - count by drive id and deleted false.
  */
@@ -16,6 +16,7 @@ import com.picturemodel.domain.entity.Image;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,6 +33,18 @@ import java.util.UUID;
  */
 @Repository
 public interface ImageRepository extends JpaRepository<Image, UUID>, JpaSpecificationExecutor<Image> {
+
+    /**
+     * Load an image with its drive initialized (used for streaming file endpoints).
+     */
+    @EntityGraph(attributePaths = "drive")
+    Optional<Image> findWithDriveById(UUID id);
+
+    /**
+     * Load an image with its drive, metadata, and tags initialized (used for detail responses).
+     */
+    @EntityGraph(attributePaths = {"drive", "metadata", "tags"})
+    Optional<Image> findDetailById(UUID id);
 
     /**
      * Find an image by drive ID and file path (unique combination).
@@ -67,6 +80,7 @@ public interface ImageRepository extends JpaRepository<Image, UUID>, JpaSpecific
      * - dirPath = "" (root): matches "image.jpg" but not "folder/image.jpg"
      * - dirPath = "photos/": matches "photos/image.jpg" but not "photos/vacation/image.jpg"
      */
+    @EntityGraph(attributePaths = "drive")
     @Query("SELECT i FROM Image i WHERE i.drive.id = :driveId " +
            "AND i.deleted = false " +
            "AND (" +
@@ -82,12 +96,21 @@ public interface ImageRepository extends JpaRepository<Image, UUID>, JpaSpecific
     /**
      * Find images for a drive, excluding deleted.
      */
+    @EntityGraph(attributePaths = "drive")
     Page<Image> findByDrive_IdAndDeletedFalse(UUID driveId, Pageable pageable);
 
     /**
      * Find images excluding deleted.
      */
+    @EntityGraph(attributePaths = "drive")
     Page<Image> findByDeletedFalse(Pageable pageable);
+
+    /**
+     * Override the specification query to ensure the drive association is initialized for DTO mapping.
+     */
+    @Override
+    @EntityGraph(attributePaths = "drive")
+    Page<Image> findAll(org.springframework.data.jpa.domain.Specification<Image> spec, Pageable pageable);
     /**
      * Count total images for a specific drive.
      */

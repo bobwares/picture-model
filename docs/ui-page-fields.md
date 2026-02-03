@@ -2,6 +2,7 @@
 
 Each section identifies a page by route, lists every visible field or control, describes what it represents, and notes which component renders it.
 
+
 ---
 
 ## 1. Dashboard (`/`)

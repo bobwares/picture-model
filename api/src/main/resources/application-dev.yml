@@ -1,3 +1,15 @@
+# /**
+#  * App: Picture Model
+#  * Package: api/src/main/resources
+#  * File: application-dev.yml
+#  * Version: 0.1.0
+#  * Turns: 16
+#  * Author: codex
+#  * Date: 2026-02-03T05:10:45Z
+#  * Exports: N/A
+#  * Description: Development profile overrides for the Picture Model API.
+#  */
+
 spring:
   datasource:
     url: jdbc:h2:file:./data/picturemodel
@@ -8,7 +20,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
@@ -24,8 +36,7 @@ logging:
   level:
     root: INFO
     com.picturemodel: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.SQL: INFO
 
 picture-model:
   security:

@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: com.picturemodel.service
  * File: CrawlerJobRunner.java
- * Version: 0.1.9
- * Turns: 8,9,10,22,25,26
+ * Version: 0.1.10
+ * Turns: 8,9,10,22,25,26,19
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-02-02T20:20:10Z
+ * Date: 2026-02-03T07:32:01Z
  * Exports: CrawlerJobRunner
  * Description: Async crawl job executor for indexing files into Image records.
  * CrawlerJobRunner - traverses file trees, updates crawl job status, and persists images.
@@ -215,9 +215,18 @@ public class CrawlerJobRunner {
                 }
             }
 
-            upsertImage(provider, job, entry, childRelativePath, extractExif);
-            job.setFilesProcessed(job.getFilesProcessed() + 1);
-            maybeSave(job, counter);
+            try {
+                upsertImage(provider, job, entry, childRelativePath, extractExif);
+                job.setFilesProcessed(job.getFilesProcessed() + 1);
+                maybeSave(job, counter);
+            } catch (Exception e) {
+                if (isMissingFileException(e)) {
+                    log.warn("Skipping missing file '{}' during crawl job {}", childRelativePath, job.getId(), e);
+                    appendError(job, "Missing file '" + childRelativePath + "': " + e.getMessage());
+                    continue;
+                }
+                throw e;
+            }
         }
     }
 
@@ -429,6 +438,27 @@ public class CrawlerJobRunner {
     private boolean isCancelled(UUID jobId) {
         AtomicBoolean flag = cancelFlags.get(jobId);
         return flag != null && flag.get();
+    }
+
+    private boolean isMissingFileException(Throwable error) {
+        Throwable current = error;
+        while (current != null) {
+            if (current instanceof java.io.FileNotFoundException) {
+                return true;
+            }
+            String message = current.getMessage();
+            if (message != null) {
+                String lower = message.toLowerCase();
+                if (lower.contains("cannot find the file specified")
+                        || lower.contains("no such file")
+                        || lower.contains("does not exist")
+                        || lower.contains("not found")) {
+                    return true;
+                }
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     private boolean isIgnoredPath(String path) {

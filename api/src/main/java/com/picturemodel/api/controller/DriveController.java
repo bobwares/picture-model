@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: com.picturemodel.api.controller
  * File: DriveController.java
- * Version: 0.1.3
+ * Version: 0.1.4
  * Turns: 5,15
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-02-02T19:01:20Z
+ * Date: 2026-02-03T04:56:07Z
  * Exports: DriveController
  * Description: class DriveController for DriveController responsibilities. Methods: createDrive - create drive; getAllDrives - get all drives; getDrive - get drive; deleteDrive - delete drive; connect - connect; disconnect - disconnect; getStatus - get status; testConnection - test connection; parseCredentials - parse credentials; resolveSort - resolve sort param.
  */
@@ -236,7 +236,9 @@ public class DriveController {
         return repositoryWrapper.findImagesByDriveAndDirectory(id, directoryPath, pageable)
                 .map(imagesPage -> {
                     Map<String, Object> response = new HashMap<>();
-                    response.put("content", imagesPage.getContent());
+                    response.put("content", imagesPage.getContent().stream()
+                            .map(dtoMapper::toImageSummaryDto)
+                            .toList());
                     response.put("totalElements", imagesPage.getTotalElements());
                     response.put("totalPages", imagesPage.getTotalPages());
                     response.put("currentPage", imagesPage.getNumber());

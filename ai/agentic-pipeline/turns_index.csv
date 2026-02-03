@@ -11,3 +11,11 @@ turnId,timestampUtc,task,branch,tag,headAfter,testsPassed,testsFailed,coverageDe
 10,2026-02-02T22:38:01Z,package-javadoc,n/a,n/a,n/a,0,0,0.0
 11,2026-02-02T23:10:16Z,create-aip-fullstack-java-nextjs,n/a,n/a,n/a,0,0,0.0
 12,2026-02-02T23:28:15Z,aip-fullstack-java-nextjs-v2,n/a,n/a,n/a,0,0,0.0
+13,2026-02-03T02:35:57Z,fix-cors,n/a,n/a,n/a,0,0,0.0
+14,2026-02-03T02:45:04Z,fix-lazy-serialization,n/a,n/a,n/a,0,0,0.0
+15,2026-02-03T04:57:05Z,fix-image-lazy-serialization,n/a,n/a,n/a,0,0,0.0
+16,2026-02-03T05:11:29Z,logging-config,n/a,n/a,n/a,0,0,0.0
+17,2026-02-03T05:20:35Z,fix-async-timeout-logging,n/a,n/a,n/a,0,0,0.0
+18,2026-02-03T05:26:23Z,ui-drive-connect-navigation,n/a,n/a,n/a,0,0,0.0
+19,2026-02-03T07:36:38Z,handle-missing-smb-files,n/a,n/a,n/a,0,0,0.0
+20,2026-02-03T08:07:43Z,merge-smb-root-path,n/a,n/a,n/a,0,0,0.0

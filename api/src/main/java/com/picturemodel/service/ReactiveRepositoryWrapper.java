@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: com.picturemodel.service
  * File: ReactiveRepositoryWrapper.java
- * Version: 0.1.0
- * Turns: 16
+ * Version: 0.1.1
+ * Turns: 16,15
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-02-02T19:30:00Z
+ * Date: 2026-02-03T04:55:30Z
  * Exports: ReactiveRepositoryWrapper
  * Description: Service to wrap blocking JPA repository calls with reactive types using boundedElastic scheduler.
  */
@@ -92,7 +92,13 @@ public class ReactiveRepositoryWrapper {
     }
 
     public Mono<Image> findImageById(UUID id) {
-        return Mono.fromCallable(() -> imageRepository.findById(id))
+        return Mono.fromCallable(() -> imageRepository.findWithDriveById(id))
+                .flatMap(Mono::justOrEmpty)
+                .subscribeOn(Schedulers.boundedElastic());
+    }
+
+    public Mono<Image> findImageDetailById(UUID id) {
+        return Mono.fromCallable(() -> imageRepository.findDetailById(id))
                 .flatMap(Mono::justOrEmpty)
                 .subscribeOn(Schedulers.boundedElastic());
     }

@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: com.picturemodel.service
  * File: ConnectionManager.java
- * Version: 0.1.1
- * Turns: 5,24
+ * Version: 0.1.2
+ * Turns: 5,24,19
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-02-02T19:53:10Z
+ * Date: 2026-02-03T05:32:42Z
  * Exports: ConnectionManager
  * Description:
  * class ConnectionManager for ConnectionManager responsibilities.
@@ -22,6 +22,7 @@ package com.picturemodel.service;
 import com.picturemodel.domain.entity.RemoteFileDrive;
 import com.picturemodel.domain.enums.ConnectionStatus;
 import com.picturemodel.domain.repository.RemoteFileDriveRepository;
+import com.picturemodel.infrastructure.filesystem.ConnectionTestResult;
 import com.picturemodel.infrastructure.filesystem.FileSystemProvider;
 import com.picturemodel.infrastructure.filesystem.FileSystemProviderFactory;
 import jakarta.annotation.PreDestroy;
@@ -85,12 +86,20 @@ public class ConnectionManager {
         drive.setStatus(ConnectionStatus.CONNECTING);
         driveRepository.save(drive);
 
+        FileSystemProvider provider = null;
         try {
             // Create and connect provider
-            FileSystemProvider provider = providerFactory.createProvider(drive);
+            provider = providerFactory.createProvider(drive);
             provider.connect();
 
-            // Cache the provider
+            // Validate connection with a cheap provider-specific operation.
+            ConnectionTestResult testResult = provider.testConnection();
+            if (testResult == null || !Boolean.TRUE.equals(testResult.getSuccess())) {
+                String message = testResult != null ? testResult.getErrorMessage() : "Connection test failed";
+                throw new IllegalStateException(message);
+            }
+
+            // Cache the provider only after validation succeeds.
             providerCache.put(driveId, provider);
 
             // Update drive status
@@ -98,11 +107,32 @@ public class ConnectionManager {
             drive.setLastConnected(LocalDateTime.now());
             driveRepository.save(drive);
 
-            log.info("Successfully connected to drive: {}", drive.getName());
+            log.info(
+                    "Connection validated for drive: {} ({}) url={} rootPath={} durationMs={}",
+                    drive.getName(),
+                    drive.getType(),
+                    sanitizeConnectionUrl(drive.getConnectionUrl()),
+                    drive.getRootPath(),
+                    testResult.getDurationMs()
+            );
             return provider;
 
         } catch (Exception e) {
-            log.error("Failed to connect to drive: {}", drive.getName(), e);
+            log.error(
+                    "Failed to connect/validate drive: {} ({}) url={} rootPath={}",
+                    drive.getName(),
+                    drive.getType(),
+                    sanitizeConnectionUrl(drive.getConnectionUrl()),
+                    drive.getRootPath(),
+                    e
+            );
+            if (provider != null) {
+                try {
+                    provider.disconnect();
+                } catch (Exception ignored) {
+                    // best-effort cleanup
+                }
+            }
             drive.setStatus(ConnectionStatus.ERROR);
             driveRepository.save(drive);
             throw e;
@@ -175,7 +205,7 @@ public class ConnectionManager {
             FileSystemProvider provider = entry.getValue();
 
             if (!provider.isConnected()) {
-                log.warn("Drive {} is no longer connected, removing from cache", driveId);
+                log.warn("Drive {} is no longer connected (provider state), removing from cache", driveId);
 
                 // Update drive status
                 driveRepository.findById(driveId).ifPresent(drive -> {
@@ -186,6 +216,31 @@ public class ConnectionManager {
                 return true; // Remove from cache
             }
 
+            ConnectionTestResult testResult = null;
+            try {
+                testResult = provider.testConnection();
+            } catch (Exception e) {
+                testResult = ConnectionTestResult.failure("Health check failed: " + e.getMessage(), 0);
+            }
+
+            if (testResult == null || !Boolean.TRUE.equals(testResult.getSuccess())) {
+                String message = testResult != null ? testResult.getErrorMessage() : "Health check failed";
+                log.warn("Drive {} health check failed: {} (removing from cache)", driveId, message);
+
+                driveRepository.findById(driveId).ifPresent(drive -> {
+                    drive.setStatus(ConnectionStatus.ERROR);
+                    driveRepository.save(drive);
+                });
+
+                try {
+                    provider.disconnect();
+                } catch (Exception ignored) {
+                    // best-effort cleanup
+                }
+                return true;
+            }
+
+            log.debug("Drive {} health check ok ({}ms)", driveId, testResult.getDurationMs());
             return false; // Keep in cache
         });
     }

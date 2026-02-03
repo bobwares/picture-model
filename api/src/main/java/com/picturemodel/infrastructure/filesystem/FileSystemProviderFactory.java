@@ -2,10 +2,10 @@
  * App: Picture Model
  * Package: com.picturemodel.infrastructure.filesystem
  * File: FileSystemProviderFactory.java
- * Version: 0.1.1
- * Turns: 6
+ * Version: 0.1.2
+ * Turns: 6,20
  * Author: Bobwares (bobwares@outlook.com)
- * Date: 2026-01-31T08:57:04Z
+ * Date: 2026-02-03T08:07:08Z
  * Exports: FileSystemProviderFactory
  * Description: class FileSystemProviderFactory for FileSystemProviderFactory responsibilities. Methods: createProvider - create provider; getStringValue - get string value; getIntValue - get int value; extractHostFromUrl - extract host from url.
  */
@@ -20,6 +20,8 @@ import com.picturemodel.infrastructure.security.CredentialEncryptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.net.URI;
 
 /**
  * Factory for creating FileSystemProvider instances based on drive type.
@@ -63,7 +65,8 @@ public class FileSystemProviderFactory {
                 String smbUsername = getStringValue(credentials, "username", "");
                 String smbPassword = getStringValue(credentials, "password", "");
                 String smbDomain = getStringValue(credentials, "domain", "");
-                return new SmbFileSystemProvider(connectionUrl, smbUsername, smbPassword, smbDomain);
+                String smbUrl = buildSmbUrl(connectionUrl, rootPath);
+                return new SmbFileSystemProvider(smbUrl, smbUsername, smbPassword, smbDomain);
 
             case SFTP:
                 String sftpHost = getStringValue(credentials, "host", extractHostFromUrl(connectionUrl));
@@ -109,5 +112,50 @@ public class FileSystemProviderFactory {
             log.warn("Failed to extract host from URL: {}", url, e);
         }
         return "localhost";
+    }
+
+    private String buildSmbUrl(String connectionUrl, String rootPath) {
+        if (connectionUrl == null) {
+            return null;
+        }
+        String baseUrl = connectionUrl.endsWith("/") ? connectionUrl : connectionUrl + "/";
+        if (rootPath == null || rootPath.isBlank()) {
+            return baseUrl;
+        }
+        String normalizedRoot = trimSeparators(rootPath);
+        if (normalizedRoot.isEmpty()) {
+            return baseUrl;
+        }
+
+        try {
+            URI uri = new URI(baseUrl);
+            String path = uri.getPath();
+            String normalizedPath = trimSeparators(path);
+            if (!normalizedPath.isEmpty()) {
+                String lowerPath = normalizedPath.toLowerCase();
+                String lowerRoot = normalizedRoot.toLowerCase();
+                if (lowerPath.equals(lowerRoot) || lowerPath.endsWith("/" + lowerRoot)) {
+                    return baseUrl;
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to parse SMB URL for root path merge: {}", connectionUrl, e);
+        }
+
+        return baseUrl + normalizedRoot;
+    }
+
+    private String trimSeparators(String path) {
+        if (path == null || path.isBlank()) {
+            return "";
+        }
+        String normalized = path.trim().replace('\\', '/');
+        while (normalized.startsWith("/")) {
+            normalized = normalized.substring(1);
+        }
+        while (normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return normalized;
     }
 }

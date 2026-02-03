@@ -2,10 +2,10 @@
 #  * App: Picture Model
 #  * Package: api/src/main/resources
 #  * File: application.yml
-#  * Version: 0.1.2
-#  * Turns: 4,9
+#  * Version: 0.1.4
+#  * Turns: 4,9,16,17
 #  * Author: codex
-#  * Date: 2026-01-31T21:59:02Z
+#  * Date: 2026-02-03T05:19:16Z
 #  * Exports: N/A
 #  * Description: Base application configuration for the Picture Model API.
 #  */
@@ -16,6 +16,10 @@ server:
 spring:
   application:
     name: picture-model-api
+
+  mvc:
+    async:
+      request-timeout: 300s
 
   datasource:
     url: jdbc:postgresql://localhost:5432/picturemodel
@@ -52,9 +56,9 @@ logging:
     root: INFO
     com.picturemodel: DEBUG
     org.springframework.web: INFO
-    org.hibernate.SQL: DEBUG
+    org.hibernate.SQL: INFO
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
 management:
