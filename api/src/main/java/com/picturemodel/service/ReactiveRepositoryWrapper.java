@@ -146,9 +146,9 @@ public class ReactiveRepositoryWrapper {
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
-    public Mono<ImageMetadata> findMetadataByImageId(UUID imageId) {
-        return Mono.fromCallable(() -> imageMetadataRepository.findByImage_Id(imageId))
-                .flatMap(Mono::justOrEmpty)
+    public Flux<ImageMetadata> findMetadataByImageId(UUID imageId) {
+        return Mono.fromCallable(() -> imageMetadataRepository.findByImageId(imageId))
+                .flatMapMany(Flux::fromIterable)
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
@@ -160,13 +160,13 @@ public class ReactiveRepositoryWrapper {
     }
 
     public Flux<CrawlJob> findCrawlJobsByDrive(UUID driveId, Pageable pageable) {
-        return Mono.fromCallable(() -> crawlJobRepository.findByDrive_IdOrderByStartedAtDesc(driveId, pageable))
+        return Mono.fromCallable(() -> crawlJobRepository.findByDrive_IdOrderByStartTimeDesc(driveId, pageable))
                 .flatMapMany(page -> Flux.fromIterable(page.getContent()))
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
     public Flux<CrawlJob> findRecentCrawlJobs(Pageable pageable) {
-        return Mono.fromCallable(() -> crawlJobRepository.findAllByOrderByStartedAtDesc(pageable))
+        return Mono.fromCallable(() -> crawlJobRepository.findAll(pageable))
                 .flatMapMany(page -> Flux.fromIterable(page.getContent()))
                 .subscribeOn(Schedulers.boundedElastic());
     }

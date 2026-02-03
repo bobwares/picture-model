@@ -60,7 +60,7 @@ public class TagController {
         String name = request.getName().trim();
 
         return repositoryWrapper.findTagByNameIgnoreCase(name)
-                .flatMap(existing -> Mono.just(ResponseEntity.<Tag>status(HttpStatus.CONFLICT).build()))
+                .flatMap(existing -> Mono.<ResponseEntity<Tag>>just(ResponseEntity.status(HttpStatus.CONFLICT).build()))
                 .switchIfEmpty(
                         Mono.defer(() -> {
                             Tag tag = Tag.builder()
@@ -124,19 +124,19 @@ public class TagController {
     public Mono<ResponseEntity<Void>> delete(@PathVariable UUID id) {
         return repositoryWrapper.findTagById(id)
                 .flatMap(tag -> {
+                    Mono<Void> cleanup;
                     if (!tag.getImages().isEmpty()) {
-                        return Flux.fromIterable(new HashSet<>(tag.getImages()))
+                        cleanup = Flux.fromIterable(new HashSet<>(tag.getImages()))
                                 .flatMap(image -> {
                                     image.getTags().remove(tag);
                                     return repositoryWrapper.saveImage(image);
                                 })
-                                .then(repositoryWrapper.deleteTag(tag))
-                                .thenReturn(ResponseEntity.<Void>noContent().build());
+                                .then(repositoryWrapper.deleteTag(tag));
                     } else {
-                        return repositoryWrapper.deleteTag(tag)
-                                .thenReturn(ResponseEntity.<Void>noContent().build());
+                        cleanup = repositoryWrapper.deleteTag(tag);
                     }
+                    return cleanup.then(Mono.<ResponseEntity<Void>>just(ResponseEntity.noContent().build()));
                 })
-                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+                .switchIfEmpty(Mono.<ResponseEntity<Void>>just(ResponseEntity.notFound().build()));
     }
 }

@@ -134,9 +134,10 @@ public class DriveController {
     public Mono<ResponseEntity<Void>> deleteDrive(@PathVariable UUID id) {
         log.info("Deleting drive: {}", id);
 
-        return Mono.fromRunnable(() -> driveService.deleteDrive(id))
-                .thenReturn(ResponseEntity.<Void>noContent().build())
-                .subscribeOn(Schedulers.boundedElastic());
+        return Mono.<ResponseEntity<Void>>fromCallable(() -> {
+            driveService.deleteDrive(id);
+            return ResponseEntity.noContent().build();
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     /**

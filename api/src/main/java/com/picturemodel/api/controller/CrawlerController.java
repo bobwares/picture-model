@@ -142,8 +142,9 @@ public class CrawlerController {
         log.info("Clearing crawl jobs for drive: {}", driveId);
 
         // Note: This will be migrated when CrawlerService is made reactive
-        return Mono.fromRunnable(() -> crawlerService.clearDriveHistory(driveId))
-                .thenReturn(ResponseEntity.<Void>noContent().build())
-                .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic());
+        return Mono.<ResponseEntity<Void>>fromCallable(() -> {
+            crawlerService.clearDriveHistory(driveId);
+            return ResponseEntity.noContent().build();
+        }).subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic());
     }
 }
