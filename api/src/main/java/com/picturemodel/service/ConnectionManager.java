@@ -7,7 +7,14 @@
  * Author: Bobwares (bobwares@outlook.com)
  * Date: 2026-02-02T19:53:10Z
  * Exports: ConnectionManager
- * Description: class ConnectionManager for ConnectionManager responsibilities. Methods: connect - connect; disconnect - disconnect; getProvider - get provider; isConnected - is connected; performHealthCheck - perform health check; shutdown - shutdown; getActiveConnectionCount - get active connection count.
+ * Description:
+ * class ConnectionManager for ConnectionManager responsibilities.
+ * Methods:
+ * connect - connect;
+ * disconnect - disconnect; getProvider - get provider;
+ * isConnected - is connected;
+ * performHealthCheck - perform health check; shutdown -
+ * shutdown; getActiveConnectionCount - get active connection count.
  */
 
 package com.picturemodel.service;
