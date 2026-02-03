@@ -17,26 +17,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.web.bind.support.WebExchangeBindException;
+import reactor.core.publisher.Mono;
 
 import java.util.stream.Collectors;
 
 /**
- * Global exception handler for all REST controllers.
- * Converts exceptions to standardized ErrorDto responses.
+ * Global exception handler for all REST controllers (WebFlux).
+ * Converts exceptions to standardized ErrorDto responses wrapped in Mono.
  */
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
     /**
-     * Handle validation errors.
+     * Handle validation errors (WebFlux).
      */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorDto> handleValidationException(MethodArgumentNotValidException ex) {
+    @ExceptionHandler(WebExchangeBindException.class)
+    public Mono<ResponseEntity<ErrorDto>> handleValidationException(WebExchangeBindException ex) {
         log.error("Validation error", ex);
 
         String details = ex.getBindingResult().getFieldErrors().stream()
@@ -44,51 +44,40 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining(", "));
 
         ErrorDto error = ErrorDto.of("bad_request", "Validation failed", details);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error));
     }
 
     /**
      * Handle illegal argument exceptions (e.g., entity not found).
      */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorDto> handleIllegalArgumentException(IllegalArgumentException ex) {
+    public Mono<ResponseEntity<ErrorDto>> handleIllegalArgumentException(IllegalArgumentException ex) {
         log.error("Illegal argument", ex);
 
         ErrorDto error = ErrorDto.of("not_found", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(error));
     }
 
     /**
      * Handle runtime exceptions (e.g., connection errors).
      */
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorDto> handleRuntimeException(RuntimeException ex) {
+    public Mono<ResponseEntity<ErrorDto>> handleRuntimeException(RuntimeException ex) {
         log.error("Runtime error", ex);
 
         ErrorDto error = ErrorDto.of("server_error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error));
     }
 
     /**
      * Handle all other exceptions.
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDto> handleGenericException(Exception ex) {
+    public Mono<ResponseEntity<ErrorDto>> handleGenericException(Exception ex) {
         log.error("Unexpected error", ex);
 
         ErrorDto error = ErrorDto.of("server_error", "An unexpected error occurred", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-    }
-
-    /**
-     * Handle missing static or unmapped resources.
-     */
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ErrorDto> handleNoResourceFound(NoResourceFoundException ex) {
-        log.warn("Resource not found: {}", ex.getResourcePath());
-
-        ErrorDto error = ErrorDto.of("not_found", "Resource not found", ex.getResourcePath());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error));
     }
 
     /**

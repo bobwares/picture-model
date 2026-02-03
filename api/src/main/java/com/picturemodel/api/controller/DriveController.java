@@ -18,30 +18,29 @@ import com.picturemodel.api.dto.request.CreateDriveRequest;
 import com.picturemodel.api.dto.request.UpdateDriveRequest;
 import com.picturemodel.api.dto.response.RemoteFileDriveDto;
 import com.picturemodel.api.mapper.DtoMapper;
-import com.picturemodel.domain.entity.Image;
 import com.picturemodel.domain.entity.RemoteFileDrive;
-import com.picturemodel.domain.repository.ImageRepository;
 import com.picturemodel.infrastructure.filesystem.ConnectionTestResult;
 import com.picturemodel.infrastructure.filesystem.DirectoryTreeNode;
 import com.picturemodel.service.DriveService;
+import com.picturemodel.service.ReactiveRepositoryWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
- * REST controller for drive management operations.
+ * REST controller for drive management operations (WebFlux).
  * Base path: /api/drives
  */
 @RestController
@@ -51,156 +50,173 @@ import java.util.stream.Collectors;
 public class DriveController {
 
     private final DriveService driveService;
-    private final ImageRepository imageRepository;
+    private final ReactiveRepositoryWrapper repositoryWrapper;
     private final DtoMapper dtoMapper;
     private final ObjectMapper objectMapper;
 
     /**
-     * Create a new drive.
+     * Create a new drive (service call wrapped for reactive).
      * POST /api/drives
      */
     @PostMapping
-    public ResponseEntity<RemoteFileDriveDto> createDrive(@Valid @RequestBody CreateDriveRequest request) {
+    public Mono<ResponseEntity<RemoteFileDriveDto>> createDrive(@Valid @RequestBody CreateDriveRequest request) {
         log.info("Creating drive: {}", request.getName());
 
-        RemoteFileDrive drive = dtoMapper.toEntity(request);
-        Map<String, String> credentials = parseCredentials(request.getCredentials());
-
-        RemoteFileDrive created = driveService.createDrive(drive, credentials);
-        return ResponseEntity.ok(dtoMapper.toDto(created));
+        return Mono.fromCallable(() -> {
+            RemoteFileDrive drive = dtoMapper.toEntity(request);
+            Map<String, String> credentials = parseCredentials(request.getCredentials());
+            RemoteFileDrive created = driveService.createDrive(drive, credentials);
+            return ResponseEntity.ok(dtoMapper.toDto(created));
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     /**
-     * Get all drives.
+     * Get all drives (service call wrapped for reactive).
      * GET /api/drives
      */
     @GetMapping
-    public ResponseEntity<List<RemoteFileDriveDto>> getAllDrives() {
+    public Mono<ResponseEntity<List<RemoteFileDriveDto>>> getAllDrives() {
         log.info("Getting all drives");
 
-        List<RemoteFileDriveDto> drives = driveService.getAllDrives().stream()
-                .map(dtoMapper::toDto)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(drives);
+        return Mono.fromCallable(() -> {
+            List<RemoteFileDriveDto> drives = driveService.getAllDrives().stream()
+                    .map(dtoMapper::toDto)
+                    .toList();
+            return ResponseEntity.ok(drives);
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     /**
-     * Get a specific drive by ID.
+     * Get a specific drive by ID (service call wrapped for reactive).
      * GET /api/drives/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<RemoteFileDriveDto> getDrive(@PathVariable UUID id) {
+    public Mono<ResponseEntity<RemoteFileDriveDto>> getDrive(@PathVariable UUID id) {
         log.info("Getting drive: {}", id);
 
-        RemoteFileDrive drive = driveService.getDrive(id);
-        return ResponseEntity.ok(dtoMapper.toDto(drive));
+        return Mono.fromCallable(() -> {
+            RemoteFileDrive drive = driveService.getDrive(id);
+            return ResponseEntity.ok(dtoMapper.toDto(drive));
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     /**
-     * Update a drive.
+     * Update a drive (service call wrapped for reactive).
      * PUT /api/drives/{id}
      */
     @PutMapping("/{id}")
-    public ResponseEntity<RemoteFileDriveDto> updateDrive(
+    public Mono<ResponseEntity<RemoteFileDriveDto>> updateDrive(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateDriveRequest request) {
         log.info("Updating drive: {}", id);
 
-        RemoteFileDrive updateData = RemoteFileDrive.builder()
-                .name(request.getName())
-                .connectionUrl(request.getConnectionUrl())
-                .rootPath(request.getRootPath())
-                .autoConnect(request.getAutoConnect())
-                .autoCrawl(request.getAutoCrawl())
-                .build();
+        return Mono.fromCallable(() -> {
+            RemoteFileDrive updateData = RemoteFileDrive.builder()
+                    .name(request.getName())
+                    .connectionUrl(request.getConnectionUrl())
+                    .rootPath(request.getRootPath())
+                    .autoConnect(request.getAutoConnect())
+                    .autoCrawl(request.getAutoCrawl())
+                    .build();
 
-        Map<String, String> credentials = parseCredentials(request.getCredentials());
+            Map<String, String> credentials = parseCredentials(request.getCredentials());
 
-        RemoteFileDrive updated = driveService.updateDrive(id, updateData, credentials);
-        return ResponseEntity.ok(dtoMapper.toDto(updated));
+            RemoteFileDrive updated = driveService.updateDrive(id, updateData, credentials);
+            return ResponseEntity.ok(dtoMapper.toDto(updated));
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     /**
-     * Delete a drive.
+     * Delete a drive (service call wrapped for reactive).
      * DELETE /api/drives/{id}
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDrive(@PathVariable UUID id) {
+    public Mono<ResponseEntity<Void>> deleteDrive(@PathVariable UUID id) {
         log.info("Deleting drive: {}", id);
 
-        driveService.deleteDrive(id);
-        return ResponseEntity.noContent().build();
+        return Mono.fromRunnable(() -> driveService.deleteDrive(id))
+                .thenReturn(ResponseEntity.<Void>noContent().build())
+                .subscribeOn(Schedulers.boundedElastic());
     }
 
     /**
-     * Connect to a drive.
+     * Connect to a drive (service call wrapped for reactive).
      * POST /api/drives/{id}/connect
      */
     @PostMapping("/{id}/connect")
-    public ResponseEntity<RemoteFileDriveDto> connect(@PathVariable UUID id) {
+    public Mono<ResponseEntity<RemoteFileDriveDto>> connect(@PathVariable UUID id) {
         log.info("Connecting to drive: {}", id);
 
-        RemoteFileDrive drive = driveService.connect(id);
-        return ResponseEntity.ok(dtoMapper.toDto(drive));
+        return Mono.fromCallable(() -> {
+            RemoteFileDrive drive = driveService.connect(id);
+            return ResponseEntity.ok(dtoMapper.toDto(drive));
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     /**
-     * Disconnect from a drive.
+     * Disconnect from a drive (service call wrapped for reactive).
      * POST /api/drives/{id}/disconnect
      */
     @PostMapping("/{id}/disconnect")
-    public ResponseEntity<RemoteFileDriveDto> disconnect(@PathVariable UUID id) {
+    public Mono<ResponseEntity<RemoteFileDriveDto>> disconnect(@PathVariable UUID id) {
         log.info("Disconnecting from drive: {}", id);
 
-        RemoteFileDrive drive = driveService.disconnect(id);
-        return ResponseEntity.ok(dtoMapper.toDto(drive));
+        return Mono.fromCallable(() -> {
+            RemoteFileDrive drive = driveService.disconnect(id);
+            return ResponseEntity.ok(dtoMapper.toDto(drive));
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     /**
-     * Get current status of a drive.
+     * Get current status of a drive (service call wrapped for reactive).
      * GET /api/drives/{id}/status
      */
     @GetMapping("/{id}/status")
-    public ResponseEntity<RemoteFileDriveDto> getStatus(@PathVariable UUID id) {
+    public Mono<ResponseEntity<RemoteFileDriveDto>> getStatus(@PathVariable UUID id) {
         log.info("Getting status for drive: {}", id);
 
-        RemoteFileDrive drive = driveService.getStatus(id);
-        return ResponseEntity.ok(dtoMapper.toDto(drive));
+        return Mono.fromCallable(() -> {
+            RemoteFileDrive drive = driveService.getStatus(id);
+            return ResponseEntity.ok(dtoMapper.toDto(drive));
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     /**
-     * Test connection to a drive.
+     * Test connection to a drive (service call wrapped for reactive).
      * POST /api/drives/{id}/test
      */
     @PostMapping("/{id}/test")
-    public ResponseEntity<ConnectionTestResult> testConnection(@PathVariable UUID id) {
+    public Mono<ResponseEntity<ConnectionTestResult>> testConnection(@PathVariable UUID id) {
         log.info("Testing connection for drive: {}", id);
 
-        ConnectionTestResult result = driveService.testConnection(id);
-        return ResponseEntity.ok(result);
+        return Mono.fromCallable(() -> {
+            ConnectionTestResult result = driveService.testConnection(id);
+            return ResponseEntity.ok(result);
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     /**
-     * Get directory tree for a drive.
+     * Get directory tree for a drive (service call wrapped for reactive).
      * GET /api/drives/{id}/tree
      */
     @GetMapping("/{id}/tree")
-    public ResponseEntity<DirectoryTreeNode> getDirectoryTree(
+    public Mono<ResponseEntity<DirectoryTreeNode>> getDirectoryTree(
             @PathVariable UUID id,
             @RequestParam(required = false) String path) {
         log.info("Getting directory tree for drive: {}, path: {}", id, path);
 
-        DirectoryTreeNode tree = driveService.getDirectoryTree(id, path);
-        return ResponseEntity.ok(tree);
+        return Mono.fromCallable(() -> {
+            DirectoryTreeNode tree = driveService.getDirectoryTree(id, path);
+            return ResponseEntity.ok(tree);
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     /**
-     * Get images for a drive and optional path filter.
+     * Get images for a drive and optional path filter (reactive).
      * GET /api/drives/{id}/images
      */
     @GetMapping("/{id}/images")
-    public ResponseEntity<Map<String, Object>> getDriveImages(
+    public Mono<ResponseEntity<Map<String, Object>>> getDriveImages(
             @PathVariable UUID id,
             @RequestParam(required = false) String path,
             @RequestParam(defaultValue = "date") String sort,
@@ -216,21 +232,17 @@ public class DriveController {
         String directoryPath = normalizedPath != null ? normalizedPath : "";
         log.debug("Querying images in directory: '{}' (root={})", directoryPath, normalizedPath == null);
 
-        Page<Image> imagesPage = imageRepository.findByDrive_IdAndDirectoryAndDeletedFalse(
-                id,
-                directoryPath,
-                pageable
-        );
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("content", imagesPage.getContent());
-        response.put("totalElements", imagesPage.getTotalElements());
-        response.put("totalPages", imagesPage.getTotalPages());
-        response.put("currentPage", imagesPage.getNumber());
-        response.put("size", imagesPage.getSize());
-        response.put("last", imagesPage.isLast());
-
-        return ResponseEntity.ok(response);
+        return repositoryWrapper.findImagesByDriveAndDirectory(id, directoryPath, pageable)
+                .map(imagesPage -> {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("content", imagesPage.getContent());
+                    response.put("totalElements", imagesPage.getTotalElements());
+                    response.put("totalPages", imagesPage.getTotalPages());
+                    response.put("currentPage", imagesPage.getNumber());
+                    response.put("size", imagesPage.getSize());
+                    response.put("last", imagesPage.isLast());
+                    return ResponseEntity.ok(response);
+                });
     }
 
     /**

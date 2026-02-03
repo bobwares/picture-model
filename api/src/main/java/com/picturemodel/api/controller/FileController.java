@@ -13,16 +13,17 @@
 package com.picturemodel.api.controller;
 
 import com.picturemodel.domain.entity.Image;
-import com.picturemodel.domain.repository.ImageRepository;
 import com.picturemodel.infrastructure.filesystem.FileSystemProvider;
 import com.picturemodel.service.ConnectionManager;
+import com.picturemodel.service.ReactiveRepositoryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -31,8 +32,8 @@ import java.util.UUID;
 
 /**
  * Serves image files and thumbnails by reading from the connected drive
- * via the cached FileSystemProvider.  Thumbnails are generated on the fly
- * using Thumbnailator; no disk cache is used at this stage.
+ * via the cached FileSystemProvider (WebFlux).
+ * Thumbnails are generated on the fly using Thumbnailator.
  */
 @RestController
 @RequestMapping("/api/files")
@@ -40,7 +41,7 @@ import java.util.UUID;
 @Slf4j
 public class FileController {
 
-    private final ImageRepository imageRepository;
+    private final ReactiveRepositoryWrapper repositoryWrapper;
     private final ConnectionManager connectionManager;
 
     private static final Map<String, Integer> THUMBNAIL_SIZES = Map.of(
@@ -50,82 +51,82 @@ public class FileController {
     );
 
     /**
-     * Stream the full-resolution image.
+     * Stream the full-resolution image (reactive, blocking I/O on boundedElastic).
      * GET /api/files/{imageId}
      */
     @GetMapping("/{imageId}")
-    @Transactional(readOnly = true)
-    public ResponseEntity<byte[]> getImage(@PathVariable UUID imageId) {
-        Image image = loadImage(imageId);
-
-        try {
-            FileSystemProvider provider = connectionManager.getProvider(image.getDrive().getId());
-            try (InputStream in = provider.readFile(image.getFilePath())) {
-                byte[] bytes = in.readAllBytes();
-                return ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType(image.getMimeType()))
-                        .contentLength(bytes.length)
-                        .body(bytes);
-            }
-        } catch (IllegalArgumentException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("Failed to read image {}", imageId, e);
-            throw new RuntimeException("Failed to read image: " + e.getMessage(), e);
-        }
+    public Mono<ResponseEntity<byte[]>> getImage(@PathVariable UUID imageId) {
+        return loadImage(imageId)
+                .flatMap(image -> Mono.fromCallable(() -> {
+                    FileSystemProvider provider = connectionManager.getProvider(image.getDrive().getId());
+                    try (InputStream in = provider.readFile(image.getFilePath())) {
+                        byte[] bytes = in.readAllBytes();
+                        return ResponseEntity.ok()
+                                .contentType(MediaType.parseMediaType(image.getMimeType()))
+                                .contentLength(bytes.length)
+                                .body(bytes);
+                    }
+                }).subscribeOn(Schedulers.boundedElastic()))
+                .onErrorResume(IllegalArgumentException.class, e -> Mono.error(e))
+                .onErrorResume(Exception.class, e -> {
+                    log.error("Failed to read image {}", imageId, e);
+                    return Mono.error(new RuntimeException("Failed to read image: " + e.getMessage(), e));
+                });
     }
 
     /**
-     * Stream a resized thumbnail.  The original image is read from the drive
-     * and resized in memory via Thumbnailator.  Output format matches the
-     * source mime type; TIFF and BMP are downgraded to JPEG.
+     * Stream a resized thumbnail (reactive, blocking I/O on boundedElastic).
+     * The original image is read from the drive and resized in memory via Thumbnailator.
+     * Output format matches the source mime type; TIFF and BMP are downgraded to JPEG.
      * GET /api/files/{imageId}/thumbnail?size=small|medium|large
      */
     @GetMapping("/{imageId}/thumbnail")
-    @Transactional(readOnly = true)
-    public ResponseEntity<byte[]> getThumbnail(
+    public Mono<ResponseEntity<byte[]>> getThumbnail(
             @PathVariable UUID imageId,
             @RequestParam(defaultValue = "medium") String size) {
 
-        Image image = loadImage(imageId);
-        int targetSize = THUMBNAIL_SIZES.getOrDefault(size, 250);
-        String outputFormat  = outputFormat(image.getMimeType());
-        String contentType   = outputContentType(image.getMimeType());
+        return loadImage(imageId)
+                .flatMap(image -> {
+                    int targetSize = THUMBNAIL_SIZES.getOrDefault(size, 250);
+                    String outputFormat = outputFormat(image.getMimeType());
+                    String contentType = outputContentType(image.getMimeType());
 
-        try {
-            FileSystemProvider provider = connectionManager.getProvider(image.getDrive().getId());
-            try (InputStream in = provider.readFile(image.getFilePath())) {
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                Thumbnails.of(in)
-                        .size(targetSize, targetSize)
-                        .keepAspectRatio(true)
-                        .outputFormat(outputFormat)
-                        .toOutputStream(out);
+                    return Mono.fromCallable(() -> {
+                        FileSystemProvider provider = connectionManager.getProvider(image.getDrive().getId());
+                        try (InputStream in = provider.readFile(image.getFilePath())) {
+                            ByteArrayOutputStream out = new ByteArrayOutputStream();
+                            Thumbnails.of(in)
+                                    .size(targetSize, targetSize)
+                                    .keepAspectRatio(true)
+                                    .outputFormat(outputFormat)
+                                    .toOutputStream(out);
 
-                byte[] bytes = out.toByteArray();
-                return ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType(contentType))
-                        .contentLength(bytes.length)
-                        .body(bytes);
-            }
-        } catch (IllegalArgumentException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("Failed to generate thumbnail for image {}", imageId, e);
-            throw new RuntimeException("Failed to generate thumbnail: " + e.getMessage(), e);
-        }
+                            byte[] bytes = out.toByteArray();
+                            return ResponseEntity.ok()
+                                    .contentType(MediaType.parseMediaType(contentType))
+                                    .contentLength(bytes.length)
+                                    .body(bytes);
+                        }
+                    }).subscribeOn(Schedulers.boundedElastic());
+                })
+                .onErrorResume(IllegalArgumentException.class, e -> Mono.error(e))
+                .onErrorResume(Exception.class, e -> {
+                    log.error("Failed to generate thumbnail for image {}", imageId, e);
+                    return Mono.error(new RuntimeException("Failed to generate thumbnail: " + e.getMessage(), e));
+                });
     }
 
     // ── helpers ───────────────────────────────────────────────────────────
 
-    private Image loadImage(UUID imageId) {
-        Image image = imageRepository.findById(imageId)
-                .orElseThrow(() -> new IllegalArgumentException("Image not found: " + imageId));
-
-        if (Boolean.TRUE.equals(image.getDeleted())) {
-            throw new IllegalArgumentException("Image not found: " + imageId);
-        }
-        return image;
+    private Mono<Image> loadImage(UUID imageId) {
+        return repositoryWrapper.findImageById(imageId)
+                .flatMap(image -> {
+                    if (Boolean.TRUE.equals(image.getDeleted())) {
+                        return Mono.error(new IllegalArgumentException("Image not found: " + imageId));
+                    }
+                    return Mono.just(image);
+                })
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Image not found: " + imageId)));
     }
 
     /**

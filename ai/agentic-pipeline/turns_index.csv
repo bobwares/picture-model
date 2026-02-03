@@ -10,3 +10,4 @@ turnId,timestampUtc,task,branch,tag,headAfter,testsPassed,testsFailed,coverageDe
 9,2026-02-02T19:00:29Z,lock-image-breadcrumb-left,n/a,n/a,n/a,0,0,0.0
 10,2026-02-02T22:38:01Z,package-javadoc,n/a,n/a,n/a,0,0,0.0
 11,2026-02-02T23:10:16Z,create-aip-fullstack-java-nextjs,n/a,n/a,n/a,0,0,0.0
+12,2026-02-02T23:28:15Z,aip-fullstack-java-nextjs-v2,n/a,n/a,n/a,0,0,0.0

@@ -14,24 +14,24 @@ package com.picturemodel.api.controller;
 
 import com.picturemodel.api.dto.request.StartCrawlRequest;
 import com.picturemodel.domain.entity.CrawlJob;
-import com.picturemodel.domain.repository.CrawlJobRepository;
 import com.picturemodel.service.CrawlerService;
+import com.picturemodel.service.ReactiveRepositoryWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 /**
- * REST controller for crawler/crawl job operations.
+ * REST controller for crawler/crawl job operations (WebFlux).
  * Base path: /api/crawler
  */
 @RestController
@@ -40,7 +40,7 @@ import java.util.UUID;
 @Slf4j
 public class CrawlerController {
 
-    private final CrawlJobRepository crawlJobRepository;
+    private final ReactiveRepositoryWrapper repositoryWrapper;
     private final CrawlerService crawlerService;
 
     /**
@@ -48,22 +48,23 @@ public class CrawlerController {
      * GET /api/crawler/jobs
      */
     @GetMapping("/jobs")
-    public ResponseEntity<Map<String, Object>> getAllJobs(
+    public Mono<ResponseEntity<Map<String, Object>>> getAllJobs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         log.debug("Getting all crawl jobs - page: {}, size: {}", page, size);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("startTime").descending());
-        Page<CrawlJob> jobsPage = crawlJobRepository.findAll(pageable);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("content", jobsPage.getContent());
-        response.put("totalElements", jobsPage.getTotalElements());
-        response.put("totalPages", jobsPage.getTotalPages());
-        response.put("currentPage", jobsPage.getNumber());
-        response.put("size", jobsPage.getSize());
-
-        return ResponseEntity.ok(response);
+        return repositoryWrapper.findAllCrawlJobs(pageable)
+                .map(jobsPage -> {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("content", jobsPage.getContent());
+                    response.put("totalElements", jobsPage.getTotalElements());
+                    response.put("totalPages", jobsPage.getTotalPages());
+                    response.put("currentPage", jobsPage.getNumber());
+                    response.put("size", jobsPage.getSize());
+                    return ResponseEntity.ok(response);
+                });
     }
 
     /**
@@ -71,23 +72,24 @@ public class CrawlerController {
      * GET /api/crawler/drives/{driveId}/jobs
      */
     @GetMapping("/drives/{driveId}/jobs")
-    public ResponseEntity<Map<String, Object>> getDriveJobs(
+    public Mono<ResponseEntity<Map<String, Object>>> getDriveJobs(
             @PathVariable UUID driveId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         log.debug("Getting crawl jobs for drive {} - page: {}, size: {}", driveId, page, size);
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<CrawlJob> jobsPage = crawlJobRepository.findByDrive_IdOrderByStartTimeDesc(driveId, pageable);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("content", jobsPage.getContent());
-        response.put("totalElements", jobsPage.getTotalElements());
-        response.put("totalPages", jobsPage.getTotalPages());
-        response.put("currentPage", jobsPage.getNumber());
-        response.put("size", jobsPage.getSize());
-
-        return ResponseEntity.ok(response);
+        return repositoryWrapper.findCrawlJobsByDriveOrderByStartTime(driveId, pageable)
+                .map(jobsPage -> {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("content", jobsPage.getContent());
+                    response.put("totalElements", jobsPage.getTotalElements());
+                    response.put("totalPages", jobsPage.getTotalPages());
+                    response.put("currentPage", jobsPage.getNumber());
+                    response.put("size", jobsPage.getSize());
+                    return ResponseEntity.ok(response);
+                });
     }
 
     /**
@@ -95,47 +97,53 @@ public class CrawlerController {
      * GET /api/crawler/jobs/{id}
      */
     @GetMapping("/jobs/{id}")
-    public ResponseEntity<CrawlJob> getJob(@PathVariable UUID id) {
+    public Mono<ResponseEntity<CrawlJob>> getJob(@PathVariable UUID id) {
         log.debug("Getting crawl job: {}", id);
 
-        return crawlJobRepository.findById(id)
+        return repositoryWrapper.findCrawlJobById(id)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 
     /**
-     * Start a new crawl job.
+     * Start a new crawl job (service call will be made reactive later).
      * POST /api/crawler/start
      */
     @PostMapping("/start")
-    public ResponseEntity<CrawlJob> startCrawl(@Valid @RequestBody StartCrawlRequest request) {
+    public Mono<ResponseEntity<CrawlJob>> startCrawl(@Valid @RequestBody StartCrawlRequest request) {
         log.info("Starting crawl job with request: {}", request);
 
-        CrawlJob job = crawlerService.startCrawl(request);
-        return ResponseEntity.accepted().body(job);
+        // Note: This will be migrated when CrawlerService is made reactive
+        return Mono.fromCallable(() -> crawlerService.startCrawl(request))
+                .map(job -> ResponseEntity.accepted().body(job))
+                .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic());
     }
 
     /**
-     * Cancel a crawl job.
+     * Cancel a crawl job (service call will be made reactive later).
      * POST /api/crawler/jobs/{id}/cancel
      */
     @PostMapping("/jobs/{id}/cancel")
-    public ResponseEntity<CrawlJob> cancelJob(@PathVariable UUID id) {
+    public Mono<ResponseEntity<CrawlJob>> cancelJob(@PathVariable UUID id) {
         log.info("Cancelling crawl job: {}", id);
 
-        CrawlJob job = crawlerService.cancelJob(id);
-        return ResponseEntity.ok(job);
+        // Note: This will be migrated when CrawlerService is made reactive
+        return Mono.fromCallable(() -> crawlerService.cancelJob(id))
+                .map(ResponseEntity::ok)
+                .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic());
     }
 
     /**
-     * Clear crawl job history for a drive.
+     * Clear crawl job history for a drive (service call will be made reactive later).
      * DELETE /api/crawler/drives/{driveId}/jobs
      */
     @DeleteMapping("/drives/{driveId}/jobs")
-    public ResponseEntity<Void> clearDriveJobs(@PathVariable UUID driveId) {
+    public Mono<ResponseEntity<Void>> clearDriveJobs(@PathVariable UUID driveId) {
         log.info("Clearing crawl jobs for drive: {}", driveId);
 
-        crawlerService.clearDriveHistory(driveId);
-        return ResponseEntity.noContent().build();
+        // Note: This will be migrated when CrawlerService is made reactive
+        return Mono.fromRunnable(() -> crawlerService.clearDriveHistory(driveId))
+                .thenReturn(ResponseEntity.<Void>noContent().build())
+                .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic());
     }
 }

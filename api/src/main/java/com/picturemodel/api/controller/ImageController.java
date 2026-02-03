@@ -14,7 +14,7 @@
 package com.picturemodel.api.controller;
 
 import com.picturemodel.domain.entity.Image;
-import com.picturemodel.domain.repository.ImageRepository;
+import com.picturemodel.service.ReactiveRepositoryWrapper;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +25,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -39,7 +40,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * REST controller for image search and list operations.
+ * REST controller for image search and list operations (WebFlux).
  * Base path: /api/images
  */
 @RestController
@@ -48,14 +49,14 @@ import java.util.UUID;
 @Slf4j
 public class ImageController {
 
-    private final ImageRepository imageRepository;
+    private final ReactiveRepositoryWrapper repositoryWrapper;
 
     /**
      * Search/list images with optional filters.
      * GET /api/images
      */
     @GetMapping
-    public ResponseEntity<Map<String, Object>> searchImages(
+    public Mono<ResponseEntity<Map<String, Object>>> searchImages(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) UUID driveId,
             @RequestParam(required = false) List<UUID> tagIds,
@@ -69,16 +70,16 @@ public class ImageController {
         Pageable pageable = PageRequest.of(page, size, resolveSort(sort));
         Specification<Image> spec = buildSpecification(query, driveId, tagIds, fromDate, toDate);
 
-        Page<Image> imagesPage = imageRepository.findAll(spec, pageable);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("content", imagesPage.getContent());
-        response.put("totalElements", imagesPage.getTotalElements());
-        response.put("totalPages", imagesPage.getTotalPages());
-        response.put("currentPage", imagesPage.getNumber());
-        response.put("size", imagesPage.getSize());
-
-        return ResponseEntity.ok(response);
+        return repositoryWrapper.findImagesBySpecification(spec, pageable)
+                .map(imagesPage -> {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("content", imagesPage.getContent());
+                    response.put("totalElements", imagesPage.getTotalElements());
+                    response.put("totalPages", imagesPage.getTotalPages());
+                    response.put("currentPage", imagesPage.getNumber());
+                    response.put("size", imagesPage.getSize());
+                    return ResponseEntity.ok(response);
+                });
     }
 
     /**
@@ -86,10 +87,10 @@ public class ImageController {
      * GET /api/images/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Image> getImage(@PathVariable UUID id) {
-        return imageRepository.findById(id)
+    public Mono<ResponseEntity<Image>> getImage(@PathVariable UUID id) {
+        return repositoryWrapper.findImageById(id)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 
     private Specification<Image> buildSpecification(

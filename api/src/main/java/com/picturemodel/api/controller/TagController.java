@@ -16,23 +16,21 @@ import com.picturemodel.api.dto.request.TagCreateRequest;
 import com.picturemodel.api.dto.request.TagUpdateRequest;
 import com.picturemodel.domain.entity.Image;
 import com.picturemodel.domain.entity.Tag;
-import com.picturemodel.domain.repository.ImageRepository;
-import com.picturemodel.domain.repository.TagRepository;
+import com.picturemodel.service.ReactiveRepositoryWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
- * REST controller for tag CRUD operations.
+ * REST controller for tag CRUD operations (WebFlux).
  * Base path: /api/tags
  */
 @RestController
@@ -40,17 +38,17 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TagController {
 
-    private final TagRepository tagRepository;
-    private final ImageRepository imageRepository;
+    private final ReactiveRepositoryWrapper repositoryWrapper;
 
     /**
      * List all tags sorted by name.
      * GET /api/tags
      */
     @GetMapping
-    public ResponseEntity<List<Tag>> getAll() {
-        List<Tag> tags = tagRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
-        return ResponseEntity.ok(tags);
+    public Mono<ResponseEntity<List<Tag>>> getAll() {
+        return repositoryWrapper.findAllTagsSorted()
+                .collectList()
+                .map(ResponseEntity::ok);
     }
 
     /**
@@ -58,21 +56,23 @@ public class TagController {
      * POST /api/tags
      */
     @PostMapping
-    public ResponseEntity<Tag> create(@Valid @RequestBody TagCreateRequest request) {
+    public Mono<ResponseEntity<Tag>> create(@Valid @RequestBody TagCreateRequest request) {
         String name = request.getName().trim();
-        Optional<Tag> existing = tagRepository.findByNameIgnoreCase(name);
-        if (existing.isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
 
-        Tag tag = Tag.builder()
-                .name(name)
-                .color(request.getColor())
-                .usageCount(0)
-                .build();
+        return repositoryWrapper.findTagByNameIgnoreCase(name)
+                .flatMap(existing -> Mono.just(ResponseEntity.<Tag>status(HttpStatus.CONFLICT).build()))
+                .switchIfEmpty(
+                        Mono.defer(() -> {
+                            Tag tag = Tag.builder()
+                                    .name(name)
+                                    .color(request.getColor())
+                                    .usageCount(0)
+                                    .build();
 
-        Tag saved = tagRepository.save(tag);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+                            return repositoryWrapper.saveTag(tag)
+                                    .map(saved -> ResponseEntity.status(HttpStatus.CREATED).body(saved));
+                        })
+                );
     }
 
     /**
@@ -80,30 +80,40 @@ public class TagController {
      * PUT /api/tags/{id}
      */
     @PutMapping("/{id}")
-    @Transactional
-    public ResponseEntity<Tag> update(@PathVariable UUID id, @Valid @RequestBody TagUpdateRequest request) {
-        Optional<Tag> tagOptional = tagRepository.findById(id);
-        if (tagOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+    public Mono<ResponseEntity<Tag>> update(@PathVariable UUID id, @Valid @RequestBody TagUpdateRequest request) {
+        return repositoryWrapper.findTagById(id)
+                .flatMap(tag -> {
+                    Mono<Tag> updateMono = Mono.just(tag);
 
-        Tag tag = tagOptional.get();
-        if (request.getName() != null) {
-            String name = request.getName().trim();
-            if (!name.isEmpty()) {
-                Optional<Tag> existing = tagRepository.findByNameIgnoreCase(name);
-                if (existing.isPresent() && !existing.get().getId().equals(id)) {
-                    return ResponseEntity.status(HttpStatus.CONFLICT).build();
-                }
-                tag.setName(name);
-            }
-        }
-        if (request.getColor() != null) {
-            tag.setColor(request.getColor());
-        }
+                    if (request.getName() != null) {
+                        String name = request.getName().trim();
+                        if (!name.isEmpty()) {
+                            updateMono = repositoryWrapper.findTagByNameIgnoreCase(name)
+                                    .flatMap(existing -> {
+                                        if (!existing.getId().equals(id)) {
+                                            return Mono.error(new IllegalStateException("CONFLICT"));
+                                        }
+                                        tag.setName(name);
+                                        return Mono.just(tag);
+                                    })
+                                    .switchIfEmpty(Mono.defer(() -> {
+                                        tag.setName(name);
+                                        return Mono.just(tag);
+                                    }));
+                        }
+                    }
 
-        Tag saved = tagRepository.save(tag);
-        return ResponseEntity.ok(saved);
+                    return updateMono.flatMap(t -> {
+                        if (request.getColor() != null) {
+                            t.setColor(request.getColor());
+                        }
+                        return repositoryWrapper.saveTag(t)
+                                .map(ResponseEntity::ok);
+                    });
+                })
+                .onErrorResume(IllegalStateException.class, e ->
+                        Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).build()))
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 
     /**
@@ -111,22 +121,22 @@ public class TagController {
      * DELETE /api/tags/{id}
      */
     @DeleteMapping("/{id}")
-    @Transactional
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        Optional<Tag> tagOptional = tagRepository.findById(id);
-        if (tagOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Tag tag = tagOptional.get();
-        if (!tag.getImages().isEmpty()) {
-            for (Image image : new HashSet<>(tag.getImages())) {
-                image.getTags().remove(tag);
-                imageRepository.save(image);
-            }
-        }
-
-        tagRepository.delete(tag);
-        return ResponseEntity.noContent().build();
+    public Mono<ResponseEntity<Void>> delete(@PathVariable UUID id) {
+        return repositoryWrapper.findTagById(id)
+                .flatMap(tag -> {
+                    if (!tag.getImages().isEmpty()) {
+                        return Flux.fromIterable(new HashSet<>(tag.getImages()))
+                                .flatMap(image -> {
+                                    image.getTags().remove(tag);
+                                    return repositoryWrapper.saveImage(image);
+                                })
+                                .then(repositoryWrapper.deleteTag(tag))
+                                .thenReturn(ResponseEntity.<Void>noContent().build());
+                    } else {
+                        return repositoryWrapper.deleteTag(tag)
+                                .thenReturn(ResponseEntity.<Void>noContent().build());
+                    }
+                })
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 }
